@@ -12,8 +12,8 @@ namespace Camelot.Tests
         {
             return new Table(new List<(float, float)>(), new List<(float, float)>())
             {
-                page = page,
-                order = order
+                Page = page,
+                Order = order
             };
         }
 
@@ -29,7 +29,7 @@ namespace Camelot.Tests
             });
 
             table_list.Sort();
-            var pageOrder = table_list.Select(t => (t.page.Value, t.order.Value)).ToArray();
+            var pageOrder = table_list.Select(t => (t.Page.Value, t.Order.Value)).ToArray();
             Assert.Equal(new[]
             {
                 (1, 1),
@@ -39,7 +39,7 @@ namespace Camelot.Tests
             }, pageOrder);
 
             table_list.Reverse();
-            var pageOrderReverse = table_list.Select(t => (t.page.Value, t.order.Value)).ToArray();
+            var pageOrderReverse = table_list.Select(t => (t.Page.Value, t.Order.Value)).ToArray();
             Assert.Equal(new[]
             {
                 (3, 4),
@@ -80,7 +80,7 @@ namespace Camelot.Tests
             });
             table_list_ok.Sort();
 
-            var pageOrder = table_list_ok.Select(t => (t.page, t.order)).ToArray();
+            var pageOrder = table_list_ok.Select(t => (t.Page, t.Order)).ToArray();
             Assert.Equal(new (int?, int?)[]
             {
                 (1, 1),
@@ -90,7 +90,7 @@ namespace Camelot.Tests
             }, pageOrder);
 
             table_list_ok.Reverse();
-            var pageOrderReverse = table_list_ok.Select(t => (t.page, t.order)).ToArray();
+            var pageOrderReverse = table_list_ok.Select(t => (t.Page, t.Order)).ToArray();
             Assert.Equal(new (int?, int?)[]
             {
                 (3, null),

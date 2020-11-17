@@ -553,12 +553,12 @@ namespace Camelot.Tests
             Table table = new Table(FooCols, FooRows);
 
             // cells
-            Assert.Equal(FooCells.Length, table.cells.Count);
+            Assert.Equal(FooCells.Length, table.Cells.Count);
 
-            for (int r = 0; r < table.cells.Count; r++)
+            for (int r = 0; r < table.Cells.Count; r++)
             {
                 var expectedRow = FooCells[r];
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 Assert.Equal(expectedRow.Length, row.Count);
 
                 for (int c = 0; c < row.Count; c++)
@@ -568,72 +568,72 @@ namespace Camelot.Tests
             }
 
             // set borders
-            for (int r = 0; r < table.cells.Count; r++)
+            for (int r = 0; r < table.Cells.Count; r++)
             {
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 for (int c = 0; c < row.Count; c++)
                 {
                     // left, bottom, right, top
-                    Assert.False(row[c].left);
-                    Assert.False(row[c].bottom);
-                    Assert.False(row[c].right);
-                    Assert.False(row[c].top);
+                    Assert.False(row[c].Left);
+                    Assert.False(row[c].Bottom);
+                    Assert.False(row[c].Right);
+                    Assert.False(row[c].Top);
                 }
             }
 
-            table.set_border();
-            for (int r = 0; r < table.cells.Count; r++)
+            table.SetBorder();
+            for (int r = 0; r < table.Cells.Count; r++)
             {
                 var expectedRow = FooBorders[r];
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 Assert.Equal(expectedRow.Length, row.Count);
 
                 for (int c = 0; c < row.Count; c++)
                 {
                     // left, bottom, right, top
-                    Assert.Equal(expectedRow[c][0], row[c].left);
-                    Assert.Equal(expectedRow[c][1], row[c].bottom);
-                    Assert.Equal(expectedRow[c][2], row[c].right);
-                    Assert.Equal(expectedRow[c][3], row[c].top);
+                    Assert.Equal(expectedRow[c][0], row[c].Left);
+                    Assert.Equal(expectedRow[c][1], row[c].Bottom);
+                    Assert.Equal(expectedRow[c][2], row[c].Right);
+                    Assert.Equal(expectedRow[c][3], row[c].Top);
                 }
             }
 
             // set spans
-            for (int r = 0; r < table.cells.Count; r++)
+            for (int r = 0; r < table.Cells.Count; r++)
             {
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 for (int c = 0; c < row.Count; c++)
                 {
-                    Assert.False(row[c].hspan);
-                    Assert.False(row[c].vspan);
+                    Assert.False(row[c].HSpan);
+                    Assert.False(row[c].VSpan);
                 }
             }
 
-            table.set_span();
-            for (int r = 0; r < table.cells.Count; r++)
+            table.SetSpan();
+            for (int r = 0; r < table.Cells.Count; r++)
             {
                 var expectedRow = FooSpans[r];
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 Assert.Equal(expectedRow.Length, row.Count);
 
                 for (int c = 0; c < row.Count; c++)
                 {
                     // hspan, vspan
-                    Assert.Equal(expectedRow[c][0], row[c].hspan);
-                    Assert.Equal(expectedRow[c][1], row[c].vspan);
+                    Assert.Equal(expectedRow[c][0], row[c].HSpan);
+                    Assert.Equal(expectedRow[c][1], row[c].VSpan);
                 }
             }
 
             // check bounds
-            for (int r = 0; r < table.cells.Count; r++)
+            for (int r = 0; r < table.Cells.Count; r++)
             {
                 var expectedRow = FooBounds[r];
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 Assert.Equal(expectedRow.Length, row.Count);
 
                 for (int c = 0; c < row.Count; c++)
                 {
-                    Assert.Equal(expectedRow[c], row[c].bound);
+                    Assert.Equal(expectedRow[c], row[c].Bound);
                 }
             }
         }
@@ -642,18 +642,18 @@ namespace Camelot.Tests
         public void FooSetAllEdges()
         {
             Table table = new Table(FooCols, FooRows);
-            table.set_all_edges();
+            table.SetAllEdges();
 
-            for (int r = 0; r < table.cells.Count; r++)
+            for (int r = 0; r < table.Cells.Count; r++)
             {
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 for (int c = 0; c < row.Count; c++)
                 {
                     // left, bottom, right, top
-                    Assert.True(row[c].left);
-                    Assert.True(row[c].bottom);
-                    Assert.True(row[c].right);
-                    Assert.True(row[c].top);
+                    Assert.True(row[c].Left);
+                    Assert.True(row[c].Bottom);
+                    Assert.True(row[c].Right);
+                    Assert.True(row[c].Top);
                 }
             }
         }
@@ -679,19 +679,19 @@ namespace Camelot.Tests
                 (208, 258, 235, 373)
             };
 
-            table.set_edges(vertical, horizontal, 2);
+            table.SetEdges(vertical, horizontal, 2);
 
-            for (int r = 0; r < table.cells.Count; r++)
+            for (int r = 0; r < table.Cells.Count; r++)
             {
                 var expectedRow = FooEdges[r];
-                var row = table.cells[r];
+                var row = table.Cells[r];
                 for (int c = 0; c < row.Count; c++)
                 {
                     // left, bottom, right, top
-                    Assert.Equal(expectedRow[c][0], row[c].left);
-                    Assert.Equal(expectedRow[c][1], row[c].bottom);
-                    Assert.Equal(expectedRow[c][2], row[c].right);
-                    Assert.Equal(expectedRow[c][3], row[c].top);
+                    Assert.Equal(expectedRow[c][0], row[c].Left);
+                    Assert.Equal(expectedRow[c][1], row[c].Bottom);
+                    Assert.Equal(expectedRow[c][2], row[c].Right);
+                    Assert.Equal(expectedRow[c][3], row[c].Top);
                 }
             }
         }

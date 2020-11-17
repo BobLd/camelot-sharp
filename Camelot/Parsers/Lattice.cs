@@ -195,10 +195,10 @@ namespace Camelot.Parsers
                     switch (d)
                     {
                         case "l":
-                            if (t.cells[r_idx][c_idx].hspan)
+                            if (t.Cells[r_idx][c_idx].HSpan)
                             {
 
-                                while (!t.cells[r_idx][c_idx_local].left)
+                                while (!t.Cells[r_idx][c_idx_local].Left)
                                 {
                                     c_idx_local -= 1;
                                 }
@@ -206,9 +206,9 @@ namespace Camelot.Parsers
                             break;
 
                         case "r":
-                            if (t.cells[r_idx][c_idx].hspan)
+                            if (t.Cells[r_idx][c_idx].HSpan)
                             {
-                                while (!t.cells[r_idx][c_idx_local].right)
+                                while (!t.Cells[r_idx][c_idx_local].Right)
                                 {
                                     c_idx_local += 1;
                                 }
@@ -216,9 +216,9 @@ namespace Camelot.Parsers
                             break;
 
                         case "t":
-                            if (t.cells[r_idx][c_idx].vspan)
+                            if (t.Cells[r_idx][c_idx].VSpan)
                             {
-                                while (!t.cells[r_idx_local][c_idx].top)
+                                while (!t.Cells[r_idx_local][c_idx].Top)
                                 {
                                     r_idx_local -= 1;
                                 }
@@ -226,9 +226,9 @@ namespace Camelot.Parsers
                             break;
 
                         case "b":
-                            if (t.cells[r_idx][c_idx].vspan)
+                            if (t.Cells[r_idx][c_idx].VSpan)
                             {
-                                while (!t.cells[r_idx_local][c_idx].bottom)
+                                while (!t.Cells[r_idx_local][c_idx].Bottom)
                                 {
                                     r_idx_local += 1;
                                 }
@@ -263,15 +263,15 @@ namespace Camelot.Parsers
             {
                 if (f == "h")
                 {
-                    for (int i = 0; i < t.cells.Count; i++)
+                    for (int i = 0; i < t.Cells.Count; i++)
                     {
-                        for (int j = 0; j < t.cells[i].Count; j++)
+                        for (int j = 0; j < t.Cells[i].Count; j++)
                         {
-                            if (t.cells[i][j].text.Trim() == "")
+                            if (t.Cells[i][j].Text.Trim() == "")
                             {
-                                if (t.cells[i][j].hspan && !t.cells[i][j].left)
+                                if (t.Cells[i][j].HSpan && !t.Cells[i][j].Left)
                                 {
-                                    t.cells[i][j].text = t.cells[i][j - 1].text;
+                                    t.Cells[i][j].Text = t.Cells[i][j - 1].Text;
                                 }
                             }
                         }
@@ -279,15 +279,15 @@ namespace Camelot.Parsers
                 }
                 else if (f == "v")
                 {
-                    for (int i = 0; i < t.cells.Count; i++)
+                    for (int i = 0; i < t.Cells.Count; i++)
                     {
-                        for (int j = 0; j < t.cells[i].Count; j++)
+                        for (int j = 0; j < t.Cells[i].Count; j++)
                         {
-                            if (t.cells[i][j].text.Trim() == "")
+                            if (t.Cells[i][j].Text.Trim() == "")
                             {
-                                if (t.cells[i][j].vspan && !t.cells[i][j].top)
+                                if (t.Cells[i][j].VSpan && !t.Cells[i][j].Top)
                                 {
-                                    t.cells[i][j].text = t.cells[i - 1][j].text;
+                                    t.Cells[i][j].Text = t.Cells[i - 1][j].Text;
                                 }
                             }
                         }
@@ -353,11 +353,11 @@ namespace Camelot.Parsers
 
             var table = new Table(cols, rows);
             // set table edges to True using ver+hor lines
-            table = table.set_edges(v_s, h_s, joint_tol: this.joint_tol);
+            table = table.SetEdges(v_s, h_s, joint_tol: this.joint_tol);
             // set table border edges to True
-            table = table.set_border();
+            table = table.SetBorder();
             // set spanning cells to True
-            table = table.set_span();
+            table = table.SetSpan();
 
             var pos_errors = new List<float>();
             // TODO: have a single list in place of two directional ones?
@@ -386,7 +386,7 @@ namespace Camelot.Parsers
                         indices = Lattice._reduce_index(table, indices, shift_text: this.shift_text);
                         foreach ((var r_idx, var c_idx, var text) in indices)
                         {
-                            table.cells[r_idx][c_idx].text = text + "\n";
+                            table.Cells[r_idx][c_idx].Text = text + "\n";
                         }
                     }
                 }
@@ -398,16 +398,16 @@ namespace Camelot.Parsers
                 table = _copy_spanning_text(table, copy_text: this.copy_text);
             }
 
-            var data = table.data();
+            var data = table.Data();
             //table.df = pd.DataFrame(data);
-            table.shape = (data.Count, data.Max(r => r.Count));
+            table.Shape = (data.Count, data.Max(r => r.Count));
 
             var whitespace = Utils.compute_whitespace(data);
-            table.flavor = "lattice";
-            table.accuracy = accuracy;
-            table.whitespace = whitespace;
-            table.order = table_idx + 1;
-            table.page = -99; //int(os.path.basename(self.rootname).replace("page-", ""));
+            table.Flavor = "lattice";
+            table.Accuracy = accuracy;
+            table.Whitespace = whitespace;
+            table.Order = table_idx + 1;
+            table.Page = -99; //int(os.path.basename(self.rootname).replace("page-", ""));
 
             // for plotting
             var _text = new List<(float x0, float y0, float x1, float y1)>();

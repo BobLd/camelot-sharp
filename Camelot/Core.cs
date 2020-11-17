@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 
@@ -27,32 +26,32 @@ namespace Camelot
             /// <summary>
             /// Number of intersections with horizontal text rows.
             /// </summary>
-            public int intersections { get; private set; }
+            public int Intersections { get; private set; }
 
             /// <summary>
             /// A text edge is valid if it intersections with at least TEXTEDGE_REQUIRED_ELEMENTS horizontal text rows.
             /// </summary>
-            public bool is_valid { get; set; }
+            public bool IsValid { get; set; }
 
             /// <summary>
             /// x-coordinate of the text edge.
             /// </summary>
-            public float x { get; internal set; }
+            public float X { get; internal set; }
 
             /// <summary>
             /// y-coordinate of bottommost point.
             /// </summary>
-            public float y0 { get; internal set; }
+            public float Y0 { get; internal set; }
 
             /// <summary>
             /// y-coordinate of topmost point.
             /// </summary>
-            public float y1 { get; internal set; }
+            public float Y1 { get; internal set; }
 
             /// <summary>
             /// {'left', 'right', 'middle'}
             /// </summary>
-            public string align { get; internal set; }
+            public string Align { get; internal set; }
 
             /// <summary>
             /// Defines a text edge coordinates relative to a left-bottom origin. (PDF coordinate space)
@@ -63,18 +62,18 @@ namespace Camelot
             /// <param name="align">optional (default: 'left') {'left', 'right', 'middle'}</param>
             public TextEdge(float x, float y0, float y1, string align = "left")
             {
-                this.x = x;
-                this.y0 = y0;
-                this.y1 = y1;
-                this.align = align;
-                this.intersections = 0;
-                this.is_valid = false;
+                X = x;
+                Y0 = y0;
+                Y1 = y1;
+                Align = align;
+                Intersections = 0;
+                IsValid = false;
             }
 
             /// <inheritdoc/>
             public override string ToString()
             {
-                return $"<TextEdge x={Math.Round(x, 2)} y0={Math.Round(y0, 2)} y1={Math.Round(y1, 2)} align={align} valid={is_valid}>";
+                return $"<TextEdge x={Math.Round(X, 2)} y0={Math.Round(Y0, 2)} y1={Math.Round(Y1, 2)} align={Align} valid={IsValid}>";
             }
 
             /// <summary>
@@ -83,18 +82,18 @@ namespace Camelot
             /// <param name="x"></param>
             /// <param name="y0"></param>
             /// <param name="edge_tol"></param>
-            public void update_coords(float x, float y0, float edge_tol = 50)
+            public void UpdateCoords(float x, float y0, float edge_tol = 50)
             {
-                if (MathExtensions.AlmostEquals(this.y0, y0, edge_tol))
+                if (MathExtensions.AlmostEquals(this.Y0, y0, edge_tol))
                 {
-                    this.x = ((this.intersections * this.x) + x) / (this.intersections + 1);
-                    this.y0 = y0;
-                    this.intersections++;
+                    this.X = ((this.Intersections * this.X) + x) / (this.Intersections + 1);
+                    this.Y0 = y0;
+                    this.Intersections++;
                     // a textedge is valid only if it extends uninterrupted
                     // over a required number of textlines
-                    if (this.intersections > TEXTEDGE_REQUIRED_ELEMENTS)
+                    if (this.Intersections > TEXTEDGE_REQUIRED_ELEMENTS)
                     {
-                        this.is_valid = true;
+                        this.IsValid = true;
                     }
                 }
             }
@@ -107,7 +106,7 @@ namespace Camelot
         /// </summary>
         public class TextEdges
         {
-            public float edge_tol { get; }
+            public float EdgeTol { get; }
 
             private readonly Dictionary<string, List<TextEdge>> _textedges;
 #if DEBUG
@@ -122,7 +121,7 @@ namespace Camelot
             /// </summary>
             public TextEdges(float edge_tol = 50)
             {
-                this.edge_tol = edge_tol;
+                this.EdgeTol = edge_tol;
                 _textedges = new Dictionary<string, List<TextEdge>>()
                 {
                     { "left" , new List<TextEdge>() },
@@ -137,7 +136,7 @@ namespace Camelot
             /// <param name="textline"></param>
             /// <param name="align"></param>
             /// <returns>Returns the x coordinate of a text row based on the specified alignment.</returns>
-            public static float get_x_coord(TextLine textline, string align)
+            public static float GetXCoord(TextLine textline, string align)
             {
                 var x_left = textline.x0();
                 var x_right = textline.x1();
@@ -163,14 +162,14 @@ namespace Camelot
             /// <param name="x_coord"></param>
             /// <param name="align"></param>
             /// <returns>Returns the index of an existing text edge using the specified x coordinate and alignment. Null if not found.</returns>
-            public int? find(float x_coord, string align)
+            public int? Find(float x_coord, string align)
             {
                 var edges = this._textedges[align];
 
                 for (int i = 0; i < edges.Count; i++)
                 {
                     TextEdge te = edges[i];
-                    if (MathExtensions.AlmostEquals(te.x, x_coord, 0.5))
+                    if (MathExtensions.AlmostEquals(te.X, x_coord, 0.5))
                     {
                         return i;
                     }
@@ -183,9 +182,9 @@ namespace Camelot
             /// </summary>
             /// <param name="textline"></param>
             /// <param name="align"></param>
-            public void add(TextLine textline, string align)
+            public void Add(TextLine textline, string align)
             {
-                var x = get_x_coord(textline, align);
+                var x = GetXCoord(textline, align);
                 float y0 = textline.y0();
                 float y1 = textline.y1();
                 var te = new TextEdge(x, y0, y1, align);
@@ -196,19 +195,19 @@ namespace Camelot
             /// Updates an existing text edge in the current dict.
             /// </summary>
             /// <param name="textline"></param>
-            public void update(TextLine textline)
+            public void Update(TextLine textline)
             {
                 foreach (string align in new[] { "left", "right", "middle" })
                 {
-                    var x_coord = get_x_coord(textline, align);
-                    var idx = this.find(x_coord, align);
+                    var x_coord = GetXCoord(textline, align);
+                    var idx = this.Find(x_coord, align);
                     if (!idx.HasValue)
                     {
-                        this.add(textline, align);
+                        this.Add(textline, align);
                     }
                     else
                     {
-                        this._textedges[align][idx.Value].update_coords(x_coord, textline.y0(), this.edge_tol);
+                        this._textedges[align][idx.Value].UpdateCoords(x_coord, textline.y0(), this.EdgeTol);
                     }
                 }
             }
@@ -217,13 +216,13 @@ namespace Camelot
             /// Generates the text edges dict based on horizontal text rows.
             /// </summary>
             /// <param name="textlines"></param>
-            public void generate(IReadOnlyList<TextLine> textlines)
+            public void Generate(IReadOnlyList<TextLine> textlines)
             {
                 foreach (var tl in textlines)
                 {
                     if (tl.Text.Trim().Length > 1) // TODO: hacky
                     {
-                        this.update(tl);
+                        this.Update(tl);
                     }
                 }
             }
@@ -238,13 +237,13 @@ namespace Camelot
             /// alignment) based on which list intersects horizontal text rows
             /// the most.
             /// </returns>
-            public List<TextEdge> get_relevant()
+            public List<TextEdge> GetRelevant()
             {
                 var intersections_sum = new Dictionary<string, float>()
                 {
-                    { "left", this._textedges["left"].Where(te => te.is_valid).Sum(te => te.intersections) },
-                    { "right", this._textedges["right"].Where(te => te.is_valid).Sum(te => te.intersections) },
-                    { "middle", this._textedges["middle"].Where(te => te.is_valid).Sum(te => te.intersections) },
+                    { "left", this._textedges["left"].Where(te => te.IsValid).Sum(te => te.Intersections) },
+                    { "right", this._textedges["right"].Where(te => te.IsValid).Sum(te => te.Intersections) },
+                    { "middle", this._textedges["middle"].Where(te => te.IsValid).Sum(te => te.Intersections) },
                 };
 
                 // TODO: naive
@@ -260,7 +259,7 @@ namespace Camelot
             /// <param name="textlines"></param>
             /// <param name="relevant_textedges"></param>
             /// <returns>Returns a dict of interesting table areas on the PDF page calculated using relevant text edges.</returns>
-            public Dictionary<(float, float, float, float), object> get_table_areas(IReadOnlyList<TextLine> textlines, IEnumerable<TextEdge> relevant_textedges)
+            public Dictionary<(float, float, float, float), object> GetTableAreas(IReadOnlyList<TextLine> textlines, IEnumerable<TextEdge> relevant_textedges)
             {
 #pragma warning disable IDE0062 // Make local function 'static'
                 (float, float, float, float) pad((float, float, float, float) area, float average_row_height)
@@ -275,16 +274,16 @@ namespace Camelot
                 }
 
                 // sort relevant textedges in reading order
-                relevant_textedges = relevant_textedges.OrderBy(te => -te.y0).ThenBy(te => te.x); //.sort(key = lambda te: (-te.y0, te.x))
+                relevant_textedges = relevant_textedges.OrderBy(te => -te.Y0).ThenBy(te => te.X); //.sort(key = lambda te: (-te.y0, te.x))
 
                 var table_areas = new Dictionary<(float, float, float, float), object>();
                 foreach (var te in relevant_textedges)
                 {
-                    if (te.is_valid)
+                    if (te.IsValid)
                     {
                         if (table_areas.Count == 0)
                         {
-                            table_areas[(te.x, te.y0, te.x, te.y1)] = null;
+                            table_areas[(te.X, te.Y0, te.X, te.Y1)] = null;
                         }
                         else
                         {
@@ -292,7 +291,7 @@ namespace Camelot
                             foreach (var area in table_areas.Keys)
                             {
                                 // check for overlap
-                                if (te.y1 >= area.Item2 && te.y0 <= area.Item4)// [1] && te.y0 <= area[3])
+                                if (te.Y1 >= area.Item2 && te.Y0 <= area.Item4)// [1] && te.y0 <= area[3])
                                 {
                                     found = area;
                                     break;
@@ -301,15 +300,15 @@ namespace Camelot
 
                             if (!found.HasValue)
                             {
-                                table_areas[(te.x, te.y0, te.x, te.y1)] = null;
+                                table_areas[(te.X, te.Y0, te.X, te.Y1)] = null;
                             }
                             else
                             {
                                 table_areas.Remove(found.Value); //table_areas.pop(found)
                                 var updated_area = (found.Value.Item1, //[0],
-                                                    Math.Min(te.y0, found.Value.Item2), //[1]),
-                                                    Math.Max(found.Value.Item3, te.x), //[2], te.x),
-                                                    Math.Max(found.Value.Item4, te.y1)); //[3], te.y1));
+                                                    Math.Min(te.Y0, found.Value.Item2), //[1]),
+                                                    Math.Max(found.Value.Item3, te.X), //[2], te.x),
+                                                    Math.Max(found.Value.Item4, te.Y1)); //[3], te.y1));
                                 table_areas[updated_area] = null;
                             }
                         }
@@ -367,72 +366,72 @@ namespace Camelot
             /// <summary>
             /// x-coordinate of left-bottom point.
             /// </summary>
-            public float x1 { get; }
+            public float X1 { get; }
 
             /// <summary>
             /// y-coordinate of left-bottom point.
             /// </summary>
-            public float y1 { get; }
+            public float Y1 { get; }
 
             /// <summary>
             /// x-coordinate of right-top point.
             /// </summary>
-            public float x2 { get; }
+            public float X2 { get; }
 
             /// <summary>
             /// y-coordinate of right-top point.
             /// </summary>
-            public float y2 { get; }
+            public float Y2 { get; }
 
             /// <summary>
             /// Tuple representing left-bottom coordinates.
             /// </summary>
-            public (float x1, float y1) lb { get; }
+            public (float x1, float y1) Lb { get; }
 
             /// <summary>
             /// Tuple representing left-top coordinates.
             /// </summary>
-            public (float x1, float y1) lt { get; }
+            public (float x1, float y1) Lt { get; }
 
             /// <summary>
             /// Tuple representing right-bottom coordinates.
             /// </summary>
-            public (float x1, float y1) rb { get; }
+            public (float x1, float y1) Rb { get; }
 
             /// <summary>
             /// Tuple representing right-top coordinates.
             /// </summary>
-            public (float x1, float y1) rt { get; }
+            public (float x1, float y1) Rt { get; }
 
             /// <summary>
             /// Whether or not cell is bounded on the left.
             /// </summary>
-            public bool left { get; internal set; }
+            public bool Left { get; internal set; }
 
             /// <summary>
             /// Whether or not cell is bounded on the right.
             /// </summary>
-            public bool right { get; internal set; }
+            public bool Right { get; internal set; }
 
             /// <summary>
             /// Whether or not cell is bounded on the top.
             /// </summary>
-            public bool top { get; internal set; }
+            public bool Top { get; internal set; }
 
             /// <summary>
             /// Whether or not cell is bounded on the bottom.
             /// </summary>
-            public bool bottom { get; internal set; }
+            public bool Bottom { get; internal set; }
 
             /// <summary>
             /// Whether or not cell spans horizontally.
             /// </summary>
-            public bool hspan { get; internal set; }
+            public bool HSpan { get; internal set; }
 
             /// <summary>
             /// Whether or not cell spans vertically.
             /// </summary>
-            public bool vspan { get; internal set; }
+            public bool VSpan { get; internal set; }
 
             /// <summary>
             /// Defines a cell in a table with coordinates relative to a left-bottom origin. (PDF coordinate space)
@@ -443,27 +442,27 @@ namespace Camelot
             /// <param name="y2">y-coordinate of right-top point.</param>
             public Cell(float x1, float y1, float x2, float y2)
             {
-                this.x1 = x1;
-                this.y1 = y1;
-                this.x2 = x2;
-                this.y2 = y2;
-                this.lb = (x1, y1);
-                this.lt = (x1, y2);
-                this.rb = (x2, y1);
-                this.rt = (x2, y2);
-                this.left = false;
-                this.right = false;
-                this.top = false;
-                this.bottom = false;
-                this.hspan = false;
-                this.vspan = false;
-                this._text = "";
+                X1 = x1;
+                Y1 = y1;
+                X2 = x2;
+                Y2 = y2;
+                Lb = (x1, y1);
+                Lt = (x1, y2);
+                Rb = (x2, y1);
+                Rt = (x2, y2);
+                Left = false;
+                Right = false;
+                Top = false;
+                Bottom = false;
+                HSpan = false;
+                VSpan = false;
+                _text = "";
             }
 
             /// <inheritdoc/>
             public override string ToString()
             {
-                return $"<Cell x1={Math.Round(this.x1, 2)} y1={Math.Round(this.y1, 2)} x2={Math.Round(this.x2, 2)} y2={Math.Round(this.y2, 2)}>";
+                return $"<Cell x1={Math.Round(X1, 2)} y1={Math.Round(Y1, 2)} x2={Math.Round(X2, 2)} y2={Math.Round(Y2, 2)}>";
             }
 
             private string _text;
@@ -471,7 +470,7 @@ namespace Camelot
             /// <summary>
             /// Text assigned to cell.
             /// </summary>
-            public string text
+            public string Text
             {
                 get
                 {
@@ -487,7 +486,7 @@ namespace Camelot
             /// <summary>
             /// The number of sides on which the cell is bounded.
             /// </summary>
-            public int bound => (this.top ? 1 : 0) + (this.bottom ? 1 : 0) + (this.left ? 1 : 0) + (this.right ? 1 : 0);
+            public int Bound => (this.Top ? 1 : 0) + (this.Bottom ? 1 : 0) + (this.Left ? 1 : 0) + (this.Right ? 1 : 0);
         }
 
         /// <summary>
@@ -498,48 +497,48 @@ namespace Camelot
             /// <summary>
             /// List of tuples representing column x-coordinates in increasing order.
             /// </summary>
-            public List<(float, float)> cols { get; }
+            public List<(float, float)> Cols { get; }
 
             /// <summary>
             /// List of tuples representing row y-coordinates in decreasing order.
             /// </summary>
-            public List<(float, float)> rows { get; }
+            public List<(float, float)> Rows { get; }
 
-            /// <summary>
-            /// class:`pandas.DataFrame`
-            /// </summary>
-            public object df { get; }
+            ///// <summary>
+            ///// class:`pandas.DataFrame`
+            ///// </summary>
+            //public object df { get; }
 
             /// <summary>
             /// tuple - Shape of the table.
             /// </summary>
-            public (int, int) shape { get; internal set; }
+            public (int, int) Shape { get; internal set; }
 
             /// <summary>
             /// Accuracy with which text was assigned to the cell.
             /// </summary>
-            public float accuracy { get; internal set; }
+            public float Accuracy { get; internal set; }
 
             /// <summary>
             /// Percentage of whitespace in the table.
             /// </summary>
-            public float whitespace { get; internal set; }
+            public float Whitespace { get; internal set; }
 
             /// <summary>
             /// Table number on PDF page.
             /// </summary>
-            public int? order { get; set; }
+            public int? Order { get; set; }
 
             /// <summary>
             /// PDF page number.
             /// </summary>
-            public int? page { get; set; }
+            public int? Page { get; set; }
 
-            public List<List<Cell>> cells { get; }
+            public List<List<Cell>> Cells { get; }
 
             public (float x1, float y1, float x2, float y2) _bbox { get; internal set; }
 
-            public string flavor { get; internal set; }
+            public string Flavor { get; internal set; }
 
             public List<(float, float, float, float)> _text { get; internal set; }
 
@@ -554,68 +553,67 @@ namespace Camelot
             /// <param name="rows">List of tuples representing row y-coordinates in decreasing order.</param>
             public Table(List<(float, float)> cols, List<(float, float)> rows)
             {
-                this.cols = cols;
-                this.rows = rows;
+                this.Cols = cols;
+                this.Rows = rows;
 
-                this.cells = new List<List<Cell>>();
+                this.Cells = new List<List<Cell>>();
                 for (int r = 0; r < rows.Count; r++)
                 {
                     var row = rows[r];
-                    this.cells.Add(new List<Cell>());
+                    this.Cells.Add(new List<Cell>());
                     foreach (var c in cols)
                     {
-                        this.cells[r].Add(new Cell(c.Item1, row.Item2, c.Item2, row.Item1));
+                        this.Cells[r].Add(new Cell(c.Item1, row.Item2, c.Item2, row.Item1));
                     }
                 }
 
-                this.df = null;
-                this.shape = (0, 0);
-                this.accuracy = 0;
-                this.whitespace = 0;
-                this.order = null;
-                this.page = null;
+                this.Shape = (0, 0);
+                this.Accuracy = 0;
+                this.Whitespace = 0;
+                this.Order = null;
+                this.Page = null;
             }
 
             /// <inheritdoc/>
             public override string ToString()
             {
-                return $"<{this.GetType().Name} shape={this.shape}>";
+                return $"<{this.GetType().Name} shape={this.Shape}>";
             }
 
             public int CompareTo(Table other)
             {
-                if (this.page.HasValue && other.page.HasValue)
+                if (this.Page.HasValue && other.Page.HasValue)
                 {
-                    if (this.page.Value == other.page.Value)
+                    if (this.Page.Value == other.Page.Value)
                     {
-                        if (this.order.HasValue && other.order.HasValue)
+                        if (this.Order.HasValue && other.Order.HasValue)
                         {
-                            return this.order.Value.CompareTo(other.order.Value);
+                            return this.Order.Value.CompareTo(other.Order.Value);
                         }
                         else
                         {
-                            throw new ArgumentException($"Cannot do CompareTo() bewteen {this.order?.GetType().Name ?? "null"} and {other.order?.GetType().Name ?? "null"}.");
+                            throw new ArgumentException($"Cannot do CompareTo() bewteen {this.Order?.GetType().Name ?? "null"} and {other.Order?.GetType().Name ?? "null"}.");
                         }
                     }
 
-                    return this.page.Value.CompareTo(other.page.Value);
+                    return this.Page.Value.CompareTo(other.Page.Value);
                 }
-                throw new ArgumentException($"Cannot do CompareTo() bewteen {this.page?.GetType().Name ?? "null"} and {other.page?.GetType().Name ?? "null"}.");
+                throw new ArgumentException($"Cannot do CompareTo() bewteen {this.Page?.GetType().Name ?? "null"} and {other.Page?.GetType().Name ?? "null"}.");
             }
 
             /// <summary>
             /// Returns two-dimensional list of strings in table.
             /// </summary>
             /// <returns>Returns two-dimensional list of strings in table.</returns>
-            public List<List<string>> data()
+            public List<List<string>> Data()
             {
                 List<List<string>> d = new List<List<string>>();
-                foreach (var row in cells)
+                foreach (var row in Cells)
                 {
                     var lr = new List<string>();
                     foreach (var cell in row)
                     {
-                        lr.Add(cell.text.Trim());
+                        lr.Add(cell.Text.Trim());
                     }
                     d.Add(lr);
                 }
@@ -626,24 +624,30 @@ namespace Camelot
             /// Returns a parsing report with %accuracy, %whitespace, table number on page and page number.
             /// </summary>
             /// <returns>Returns a parsing report with %accuracy, %whitespace, table number on page and page number.</returns>
-            public Dictionary<string, object> parsing_report()
+            public Dictionary<string, object> ParsingReport()
             {
-                throw new NotImplementedException();
+                return new Dictionary<string, object>()
+                {
+                    {  "accuracy", Math.Round(Accuracy, 2) },
+                    { "whitespace", Math.Round(Whitespace, 2) },
+                    { "order", Order },
+                    { "page", Page }
+                };
             }
 
             /// <summary>
             /// Sets all table edges to True.
             /// </summary>
-            public Table set_all_edges()
+            public Table SetAllEdges()
             {
-                for (int r = 0; r < this.rows.Count; r++)
+                for (int r = 0; r < this.Rows.Count; r++)
                 {
-                    for (int c = 0; c < this.cols.Count; c++)
+                    for (int c = 0; c < this.Cols.Count; c++)
                     {
-                        this.cells[r][c].left = true;
-                        this.cells[r][c].right = true;
-                        this.cells[r][c].top = true;
-                        this.cells[r][c].bottom = true;
+                        this.Cells[r][c].Left = true;
+                        this.Cells[r][c].Right = true;
+                        this.Cells[r][c].Top = true;
+                        this.Cells[r][c].Bottom = true;
                     }
                 }
                 return this;
@@ -657,15 +661,15 @@ namespace Camelot
             /// <param name="vertical">List of detected vertical lines.</param>
             /// <param name="horizontal">List of detected horizontal lines.</param>
             /// <param name="joint_tol"></param>
-            public Table set_edges(List<(float, float, float, float)> vertical, List<(float, float, float, float)> horizontal, int joint_tol = 2)
+            public Table SetEdges(List<(float, float, float, float)> vertical, List<(float, float, float, float)> horizontal, int joint_tol = 2)
             {
                 foreach (var v in vertical)
                 {
                     // find closest x coord
                     // iterate over y coords and find closest start and end points
-                    var i = this.cols.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(v.Item1, u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.cols) if np.isclose(v[0], t[0], atol = joint_tol)]
-                    var j = this.rows.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(v.Item4, u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.rows) if np.isclose(v[3], t[0], atol = joint_tol)]
-                    var k = this.rows.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(v.Item2, u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.rows) if np.isclose(v[1], t[0], atol = joint_tol)]
+                    var i = this.Cols.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(v.Item1, u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.cols) if np.isclose(v[0], t[0], atol = joint_tol)]
+                    var j = this.Rows.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(v.Item4, u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.rows) if np.isclose(v[3], t[0], atol = joint_tol)]
+                    var k = this.Rows.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(v.Item2, u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.rows) if np.isclose(v[1], t[0], atol = joint_tol)]
 
                     if (j.Length == 0) continue; // if not j // why not before k???
                     int J = j[0];
@@ -680,38 +684,38 @@ namespace Camelot
                             K = k[0];
                             while (J < K)
                             {
-                                this.cells[J][L].left = true;
+                                this.Cells[J][L].Left = true;
                                 J++;
                             }
                         }
                         else
                         {
-                            K = this.rows.Count;
+                            K = this.Rows.Count;
                             while (J < K)
                             {
-                                this.cells[J][L].left = true;
+                                this.Cells[J][L].Left = true;
                                 J++;
                             }
                         }
                     }
                     else if (i.Length == 0) // only right edge
                     {
-                        L = this.cols.Count - 1;
+                        L = this.Cols.Count - 1;
                         if (k.Length > 0)
                         {
                             K = k[0];
                             while (J < K)
                             {
-                                this.cells[J][L].right = true;
+                                this.Cells[J][L].Right = true;
                                 J++;
                             }
                         }
                         else
                         {
-                            K = rows.Count;
+                            K = Rows.Count;
                             while (J < K)
                             {
-                                cells[J][L].right = true;
+                                Cells[J][L].Right = true;
                                 J++;
                             }
                         }
@@ -724,18 +728,18 @@ namespace Camelot
                             K = k[0];
                             while (J < K)
                             {
-                                this.cells[J][L].left = true;
-                                this.cells[J][L - 1].right = true;
+                                this.Cells[J][L].Left = true;
+                                this.Cells[J][L - 1].Right = true;
                                 J++;
                             }
                         }
                         else
                         {
-                            K = this.rows.Count;
+                            K = this.Rows.Count;
                             while (J < K)
                             {
-                                this.cells[J][L].left = true;
-                                this.cells[J][L - 1].right = true;
+                                this.Cells[J][L].Left = true;
+                                this.Cells[J][L - 1].Right = true;
                                 J++;
                             }
                         }
@@ -746,9 +750,9 @@ namespace Camelot
                 {
                     // find closest y coord
                     // iterate over x coords and find closest start and end points
-                    var i = this.rows.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(h.Item2, u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.rows) if np.isclose(h[1], t[0], atol = joint_tol)]
-                    var j = this.cols.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(h.Item1, u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.cols) if np.isclose(h[0], t[0], atol = joint_tol)]
-                    var k = this.cols.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(h.Item3, u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.cols) if np.isclose(h[2], t[0], atol = joint_tol)]
+                    var i = this.Rows.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(h.Item2, u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.rows) if np.isclose(h[1], t[0], atol = joint_tol)]
+                    var j = this.Cols.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(h.Item1, u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.cols) if np.isclose(h[0], t[0], atol = joint_tol)]
+                    var k = this.Cols.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(h.Item3, u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.cols) if np.isclose(h[2], t[0], atol = joint_tol)]
 
                     if (j.Length == 0) continue; // if not j // why not before k???
                     int J = j[0];
@@ -763,38 +767,38 @@ namespace Camelot
                             K = k[0];
                             while (J < K)
                             {
-                                this.cells[L][J].top = true;
+                                this.Cells[L][J].Top = true;
                                 J++;
                             }
                         }
                         else
                         {
-                            K = this.cols.Count;
+                            K = this.Cols.Count;
                             while (J < K)
                             {
-                                this.cells[L][J].top = true;
+                                this.Cells[L][J].Top = true;
                                 J++;
                             }
                         }
                     }
                     else if (i.Length == 0) // only bottom edge
                     {
-                        L = this.rows.Count - 1;
+                        L = this.Rows.Count - 1;
                         if (k.Length > 0)
                         {
                             K = k[0];
                             while (J < K)
                             {
-                                this.cells[L][J].bottom = true;
+                                this.Cells[L][J].Bottom = true;
                                 J++;
                             }
                         }
                         else
                         {
-                            K = this.cols.Count;
+                            K = this.Cols.Count;
                             while (J < K)
                             {
-                                this.cells[L][J].bottom = true;
+                                this.Cells[L][J].Bottom = true;
                                 J++;
                             }
                         }
@@ -807,18 +811,18 @@ namespace Camelot
                             K = k[0];
                             while (J < K)
                             {
-                                this.cells[L][J].top = true;
-                                this.cells[L - 1][J].bottom = true;
+                                this.Cells[L][J].Top = true;
+                                this.Cells[L - 1][J].Bottom = true;
                                 J++;
                             }
                         }
                         else
                         {
-                            K = this.cols.Count;
+                            K = this.Cols.Count;
                             while (J < K)
                             {
-                                this.cells[L][J].top = true;
-                                this.cells[L - 1][J].bottom = true;
+                                this.Cells[L][J].Top = true;
+                                this.Cells[L - 1][J].Bottom = true;
                                 J++;
                             }
                         }
@@ -831,18 +835,18 @@ namespace Camelot
             /// <summary>
             /// Sets table border edges to True.
             /// </summary>
-            public Table set_border()
+            public Table SetBorder()
             {
-                for (int r = 0; r < this.rows.Count; r++)
+                for (int r = 0; r < this.Rows.Count; r++)
                 {
-                    this.cells[r][0].left = true;
-                    this.cells[r][this.cols.Count - 1].right = true;
+                    this.Cells[r][0].Left = true;
+                    this.Cells[r][this.Cols.Count - 1].Right = true;
                 }
 
-                for (int c = 0; c < this.cols.Count; c++)
+                for (int c = 0; c < this.Cols.Count; c++)
                 {
-                    this.cells[0][c].top = true;
-                    this.cells[this.rows.Count - 1][c].bottom = true;
+                    this.Cells[0][c].Top = true;
+                    this.Cells[this.Rows.Count - 1][c].Bottom = true;
                 }
 
                 return this;
@@ -852,55 +856,55 @@ namespace Camelot
             /// Sets a cell's hspan or vspan attribute to True depending
             /// on whether the cell spans horizontally or vertically.
             /// </summary>
-            public Table set_span()
+            public Table SetSpan()
             {
-                foreach (var row in cells)
+                foreach (var row in Cells)
                 {
                     foreach (var cell in row)
                     {
-                        var left = cell.left;
-                        var right = cell.right;
-                        var top = cell.top;
-                        var bottom = cell.bottom;
+                        var left = cell.Left;
+                        var right = cell.Right;
+                        var top = cell.Top;
+                        var bottom = cell.Bottom;
 
-                        if (cell.bound == 4)
+                        if (cell.Bound == 4)
                         {
                             continue;
                         }
-                        else if (cell.bound == 3)
+                        else if (cell.Bound == 3)
                         {
                             if (!left && (right && top && bottom))
                             {
-                                cell.hspan = true;
+                                cell.HSpan = true;
                             }
                             else if (!right && (left && top && bottom))
                             {
-                                cell.hspan = true;
+                                cell.HSpan = true;
                             }
                             else if (!top && (left && right && bottom))
                             {
-                                cell.vspan = true;
+                                cell.VSpan = true;
                             }
                             else if (!bottom && (left && right && top))
                             {
-                                cell.vspan = true;
+                                cell.VSpan = true;
                             }
                         }
-                        else if (cell.bound == 2)
+                        else if (cell.Bound == 2)
                         {
                             if (left && right && (!top && !bottom))
                             {
-                                cell.vspan = true;
+                                cell.VSpan = true;
                             }
                             else if (top && bottom && (!left && !right))
                             {
-                                cell.hspan = true;
+                                cell.HSpan = true;
                             }
                         }
-                        else if (cell.bound == 1 || cell.bound == 0)
+                        else if (cell.Bound == 1 || cell.Bound == 0)
                         {
-                            cell.vspan = true;
-                            cell.hspan = true;
+                            cell.VSpan = true;
+                            cell.HSpan = true;
                         }
                     }
                 }
@@ -913,7 +917,7 @@ namespace Camelot
             /// </summary>
             /// <param name="path">Output filepath.</param>
             /// <param name="kwargs"></param>
-            public void to_csv(string path, params string[] kwargs)
+            public void ToCsv(string path, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
@@ -924,7 +928,7 @@ namespace Camelot
             /// </summary>
             /// <param name="path"></param>
             /// <param name="kwargs"></param>
-            public void to_json(string path, params string[] kwargs)
+            public void ToJson(string path, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
@@ -935,7 +939,7 @@ namespace Camelot
             /// </summary>
             /// <param name="path"></param>
             /// <param name="kwargs"></param>
-            public void to_excel(string path, params string[] kwargs)
+            public void ToExcel(string path, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
@@ -946,7 +950,7 @@ namespace Camelot
             /// </summary>
             /// <param name="path"></param>
             /// <param name="kwargs"></param>
-            public void to_html(string path, params string[] kwargs)
+            public void ToHtml(string path, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
@@ -957,7 +961,7 @@ namespace Camelot
             /// </summary>
             /// <param name="path"></param>
             /// <param name="kwargs"></param>
-            public void to_sqlite(string path, params string[] kwargs)
+            public void ToSqlite(string path, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
@@ -981,25 +985,20 @@ namespace Camelot
             /// <inheritdoc/>
             public override string ToString()
             {
-                return $"<{this.GetType().Name} n={this.n}>";
+                return $"<{this.GetType().Name} N={this.N}>";
             }
-
-            public int len => this.Count;
-
-            //def _format_func(table, f):
-            //    return getattr(table, f"to_{f}")
 
             /// <summary>
             /// Number of tables in the list.
             /// </summary>
-            public int n => this.Count;
+            public int N => this.Count;
 
-            public void _write_file(object f = null, params string[] kwargs)
+            internal void _write_file(object f = null, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
 
-            public void _compress_dir(params string[] kwargs)
+            internal void _compress_dir(params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
@@ -1010,7 +1009,7 @@ namespace Camelot
             /// <param name="path"> Output filepath.</param>
             /// <param name="f">File format. Can be csv, json, excel, html and sqlite.</param>
             /// <param name="compress">Whether or not to add files to a ZIP archive.</param>
-            public void export(string path, string f = "csv", bool compress = false)
+            public void Export(string path, string f = "csv", bool compress = false)
             {
                 throw new NotImplementedException();
             }

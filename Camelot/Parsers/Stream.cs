@@ -286,12 +286,12 @@ namespace Camelot.Parsers
             textlines = textlines.OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList();
             var textedges = new TextEdges(this.edge_tol);
             // generate left, middle and right textedges
-            textedges.generate(textlines);
+            textedges.Generate(textlines);
             // select relevant edges
-            var relevant_textedges = textedges.get_relevant();
+            var relevant_textedges = textedges.GetRelevant();
             this.textedges.AddRange(relevant_textedges); // extend
             // guess table areas using textlines and relevant edges
-            var table_bbox = textedges.get_table_areas(textlines, relevant_textedges);
+            var table_bbox = textedges.GetTableAreas(textlines, relevant_textedges);
             // treat whole page as table area if no table areas found
             if (table_bbox.Count == 0)
             {
@@ -429,7 +429,7 @@ namespace Camelot.Parsers
         public Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs)
         {
             Table table = new Table(cols, rows);
-            table.set_all_edges();
+            table.SetAllEdges();
 
             var pos_errors = new List<float>();
             // TODO: have a single list in place of two directional ones?
@@ -462,23 +462,23 @@ namespace Camelot.Parsers
                         pos_errors.Add(error);
                         foreach ((var r_idx, var c_idx, var text) in indices)
                         {
-                            table.cells[r_idx][c_idx].text = text + "\n";
+                            table.Cells[r_idx][c_idx].Text = text + "\n";
                         }
                     }
                 }
             }
             var accuracy = Utils.compute_accuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) }); //[[100, pos_errors]]);
 
-            var data = table.data();
+            var data = table.Data();
             //table.df = pd.DataFrame(data)
-            table.shape = (data.Count, data.Max(r => r.Count)); //table.df.shape;
+            table.Shape = (data.Count, data.Max(r => r.Count)); //table.df.shape;
 
             var whitespace = Utils.compute_whitespace(data);
-            table.flavor = "stream";
-            table.accuracy = accuracy;
-            table.whitespace = whitespace;
-            table.order = table_idx + 1;
-            table.page = -99; //int(os.path.basename(self.rootname).replace("page-", ""));
+            table.Flavor = "stream";
+            table.Accuracy = accuracy;
+            table.Whitespace = whitespace;
+            table.Order = table_idx + 1;
+            table.Page = -99; //int(os.path.basename(self.rootname).replace("page-", ""));
 
             // for plotting
             var _text = new List<(float, float, float, float)>();

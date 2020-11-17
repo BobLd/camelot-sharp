@@ -420,12 +420,12 @@ namespace Camelot.Tests
             (var cols, var rows) = stream._generate_columns_and_rows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
             var actual = stream._generate_table(0, cols, rows);
 
-            Assert.Equal((16, 5), actual.shape);
+            Assert.Equal((16, 5), actual.Shape);
             Assert.Equal(78, actual._text.Count);
-            Assert.Equal(46.25, actual.whitespace);
-            Assert.Equal(97.09215, actual.accuracy, 4);
-            Assert.Equal("stream", actual.flavor);
-            Assert.Equal(80, actual.cells.SelectMany(r => r.Select(c => c)).Count());
+            Assert.Equal(46.25, actual.Whitespace);
+            Assert.Equal(97.09215, actual.Accuracy, 4);
+            Assert.Equal("stream", actual.Flavor);
+            Assert.Equal(80, actual.Cells.SelectMany(r => r.Select(c => c)).Count());
         }
 #endif
 
