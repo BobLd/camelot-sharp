@@ -663,20 +663,20 @@ namespace Camelot.Tests
         {
             Table table = new Table(FooCols, FooRows);
 
-            List<float[]> vertical = new List<float[]>()
+            List<(float, float, float, float)> vertical = new List<(float, float, float, float)>()
             {
-                new float[] {71, 71, 71, 275 },
-                new float[] {168, 168, 257, 168 },
-                new float[] {208, 168, 235, 235 },
-                new float[] {208, 258, 235, 235 }
+                (71, 71, 71, 275),
+                (168, 168, 257, 168),
+                (208, 168, 235, 235),
+                (208, 258, 235, 235)
             };
 
-            List<float[]> horizontal = new List<float[]>()
+            List<(float, float, float, float)> horizontal = new List<(float, float, float, float)>()
             {
-                new float[] {71, 71, 71, 275 },
-                new float[] {168, 168, 257, 168 },
-                new float[] {208, 168, 235, 235 },
-                new float[] {208, 258, 235, 373 }
+                (71, 71, 71, 275),
+                (168, 168, 257, 168),
+                (208, 168, 235, 235),
+                (208, 258, 235, 373)
             };
 
             table.set_edges(vertical, horizontal, 2);

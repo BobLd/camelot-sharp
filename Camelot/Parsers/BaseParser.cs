@@ -75,10 +75,10 @@ namespace Camelot.Parsers
             //this.images = this.layout.GetImages().Cast<object>().ToList(); // cast as object for the moment
 
             // get texts
-            var nnweOptions = layout_kwargs?.Where(o => o is NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions)?.First();
+            var nnweOptions = layout_kwargs?.Where(o => o is NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions)?.FirstOrDefault();
             var words = nnweOptions == null ? NearestNeighbourWordExtractor.Instance.GetWords(this.layout.Letters) : NearestNeighbourWordExtractor.Instance.GetWords(this.layout.Letters, nnweOptions);
 
-            var dbbOptions = layout_kwargs?.Where(o => o is DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions)?.First();
+            var dbbOptions = layout_kwargs?.Where(o => o is DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions)?.FirstOrDefault();
             var blocks = dbbOptions == null ? DocstrumBoundingBoxes.Instance.GetBlocks(words) : DocstrumBoundingBoxes.Instance.GetBlocks(words, dbbOptions);
 
             // horizontal text: normal and rotated 180

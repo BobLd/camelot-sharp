@@ -172,8 +172,7 @@ namespace Camelot.Parsers
         /// <param name="t">table : camelot.core.Table</param>
         /// <param name="idx">list - List of tuples of the form(r_idx, c_idx, text).</param>
         /// <param name="shift_text">list - {'l', 'r', 't', 'b'}
-        /// Select one or more strings from above and pass them as a list to specify where the text in a spanning cell should
-        /// flow.</param>
+        /// Select one or more strings from above and pass them as a list to specify where the text in a spanning cell should flow.</param>
         /// <returns>List of tuples of the form (r_idx, c_idx, text) where r_idx and c_idx are new row and column indices for text.</returns>
         public static List<(int r_idx, int c_idx, string text)> _reduce_index(Table t, List<(int r_idx, int c_idx, string text)> idx, string[] shift_text)
         {
@@ -181,58 +180,63 @@ namespace Camelot.Parsers
 
             foreach ((int r_idx, int c_idx, string text) in idx)
             {
+                int c_idx_local = c_idx;
+                int r_idx_local = r_idx;
+
                 foreach (var d in shift_text)
                 {
-                    if (d == "l")
+                    switch (d)
                     {
-                        if (t.cells[r_idx][c_idx].hspan)
-                        {
-                            int c_idx_local = c_idx;
-                            while (!t.cells[r_idx][c_idx_local].left)
+                        case "l":
+                            if (t.cells[r_idx][c_idx].hspan)
                             {
-                                c_idx_local -= 1;
-                            }
-                        }
-                    }
 
-                    if (d == "r")
-                    {
-                        if (t.cells[r_idx][c_idx].hspan)
-                        {
-                            int c_idx_local = c_idx;
-                            while (!t.cells[r_idx][c_idx_local].right)
-                            {
-                                c_idx_local += 1;
+                                while (!t.cells[r_idx][c_idx_local].left)
+                                {
+                                    c_idx_local -= 1;
+                                }
                             }
-                        }
-                    }
+                            break;
 
-                    if (d == "t")
-                    {
-                        if (t.cells[r_idx][c_idx].vspan)
-                        {
-                            int r_idx_local = r_idx;
-                            while (!t.cells[r_idx][c_idx].top)
+                        case "r":
+                            if (t.cells[r_idx][c_idx].hspan)
                             {
-                                r_idx_local -= 1;
+                                while (!t.cells[r_idx][c_idx_local].right)
+                                {
+                                    c_idx_local += 1;
+                                }
                             }
-                        }
-                    }
+                            break;
 
-                    if (d == "b")
-                    {
-                        if (t.cells[r_idx][c_idx].vspan)
-                        {
-                            int r_idx_local = r_idx;
-                            while (!t.cells[r_idx][c_idx].bottom)
+                        case "t":
+                            if (t.cells[r_idx][c_idx].vspan)
                             {
-                                r_idx_local += 1;
+                                while (!t.cells[r_idx_local][c_idx].top)
+                                {
+                                    r_idx_local -= 1;
+                                }
                             }
-                        }
+                            break;
+
+                        case "b":
+                            if (t.cells[r_idx][c_idx].vspan)
+                            {
+                                while (!t.cells[r_idx_local][c_idx].bottom)
+                                {
+                                    r_idx_local += 1;
+                                }
+                            }
+                            break;
+
+                        case "":
+                            break;
+
+                        default:
+                            throw new ArgumentException($"Unknown value '{d}'. Valid values are 'l', 'r', 't' and 'b'.", nameof(shift_text));
                     }
                 }
 
-                indices.Add((r_idx, c_idx, text));
+                indices.Add((r_idx_local, c_idx_local, text));
             }
             return indices;
         }
@@ -287,10 +291,9 @@ namespace Camelot.Parsers
             return t;
         }
 
-        public byte[] _generate_image()
+        public void _generate_image()
         {
             // from ..ext.ghostscript import Ghostscript
-            return drawingProcessor.DrawPage(this.layout, 1.0).ToArray();
         }
 
         byte[] image;
@@ -403,7 +406,7 @@ namespace Camelot.Parsers
 
         Dictionary<string, List<TextLine>> t_bbox;
 
-        public (List<(float, float)> cols, List<(float, float)> rows, List<float[]> v_s, List<float[]> h_s) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
+        public (List<(float, float)> cols, List<(float, float)> rows, List<(float, float, float, float)> v_s, List<(float, float, float, float)> h_s) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
         {
             // select elements which lie within table_bbox
             Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>();
@@ -427,20 +430,19 @@ namespace Camelot.Parsers
             rows = Utils.merge_close_lines(rows.OrderByDescending(c => c), line_tol: this.line_tol);
             // make grid using x and y coord of shortlisted rows and cols
             //cols = [(cols[i], cols[i + 1]) for i in range(0, len(cols) - 1)]
-            var colsT = Enumerable.Range(0, cols.Count).Select(i => (cols[i], cols[i + 1])).ToList();
+            var colsT = Enumerable.Range(0, cols.Count - 1).Select(i => (cols[i], cols[i + 1])).ToList();
 
             //rows = [(rows[i], rows[i + 1]) for i in range(0, len(rows) - 1)]
-            var rowsT = Enumerable.Range(0, rows.Count).Select(i => (rows[i], rows[i + 1])).ToList();
+            var rowsT = Enumerable.Range(0, rows.Count - 1).Select(i => (rows[i], rows[i + 1])).ToList();
             return (colsT, rowsT, v_s, h_s);
         }
 
-        //public Table _generate_table(int table_idx, List<object> cols, List<object> rows, params string[] kwargs)
+        /// <summary>
+        /// TODO: BobLD - have a single function for stream and lattice
+        /// </summary>
         public Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows,
-            List<float[]> v_s = null, List<float[]> h_s = null)
+            List<(float, float, float, float)> v_s = null, List<(float, float, float, float)> h_s = null)
         {
-            //var v_s = kwargs.get("v_s");
-            //var h_s = kwargs.get("h_s");
-
             if (v_s == null || h_s == null)
             {
                 throw new ArgumentNullException($"No segments found on {this.rootname}");
@@ -480,7 +482,7 @@ namespace Camelot.Parsers
                         indices = Lattice._reduce_index(table, indices, shift_text: this.shift_text);
                         foreach ((var r_idx, var c_idx, var text) in indices)
                         {
-                            table.cells[r_idx][c_idx].text = text;
+                            table.cells[r_idx][c_idx].text = text + "\n";
                         }
                     }
                 }
@@ -542,7 +544,7 @@ namespace Camelot.Parsers
                 return null;
             }
 
-            this.image = this._generate_image();
+            this._generate_image();
             this._generate_table_bbox();
 
             var _tables = new List<Table>();
@@ -557,13 +559,6 @@ namespace Camelot.Parsers
                 table_idx++;
             }
 
-            //foreach ((object table_idx, float[] tk) in this.table_bbox.Keys.OrderByDescending(x => x[1]))
-            //{
-            //    (var cols, var rows, var v_s, var h_s) = this._generate_columns_and_rows(table_idx, tk);
-            //    var table = this._generate_table(table_idx, cols, rows, v_s : v_s, h_s : h_s);
-            //    table._bbox = tk;
-            //    _tables.Add(table);
-            //}
             return _tables;
         }
     }

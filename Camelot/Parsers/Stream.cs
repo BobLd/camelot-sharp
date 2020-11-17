@@ -440,6 +440,9 @@ namespace Camelot.Parsers
 
         private Dictionary<string, List<TextLine>> t_bbox;
 
+        /// <summary>
+        /// TODO: BobLD - have a single function for stream and lattice
+        /// </summary>
         public Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs)
         {
             Table table = new Table(cols, rows);
@@ -475,7 +478,7 @@ namespace Camelot.Parsers
                         pos_errors.Add(error);
                         foreach ((var r_idx, var c_idx, var text) in indices)
                         {
-                            table.cells[r_idx][c_idx].text = text;
+                            table.cells[r_idx][c_idx].text = text + "\n";
                         }
                     }
                 }

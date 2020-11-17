@@ -476,7 +476,7 @@ namespace Camelot
             {
                 get
                 {
-                    return _text;
+                    return _text.TrimEnd('\n'); // added by bobld - TrimEnd('\n')
                 }
 
                 set
@@ -662,15 +662,15 @@ namespace Camelot
             /// <param name="vertical">List of detected vertical lines.</param>
             /// <param name="horizontal">List of detected horizontal lines.</param>
             /// <param name="joint_tol"></param>
-            public Table set_edges(List<float[]> vertical, List<float[]> horizontal, int joint_tol = 2)
+            public Table set_edges(List<(float, float, float, float)> vertical, List<(float, float, float, float)> horizontal, int joint_tol = 2)
             {
                 foreach (var v in vertical)
                 {
                     // find closest x coord
                     // iterate over y coords and find closest start and end points
-                    var i = this.cols.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(v[0], u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.cols) if np.isclose(v[0], t[0], atol = joint_tol)]
-                    var j = this.rows.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(v[3], u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.rows) if np.isclose(v[3], t[0], atol = joint_tol)]
-                    var k = this.rows.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(v[1], u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.rows) if np.isclose(v[1], t[0], atol = joint_tol)]
+                    var i = this.cols.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(v.Item1, u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.cols) if np.isclose(v[0], t[0], atol = joint_tol)]
+                    var j = this.rows.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(v.Item4, u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.rows) if np.isclose(v[3], t[0], atol = joint_tol)]
+                    var k = this.rows.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(v.Item2, u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.rows) if np.isclose(v[1], t[0], atol = joint_tol)]
 
                     if (j.Length == 0) continue; // if not j // why not before k???
                     int J = j[0];
@@ -751,9 +751,9 @@ namespace Camelot
                 {
                     // find closest y coord
                     // iterate over x coords and find closest start and end points
-                    var i = this.rows.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(h[1], u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.rows) if np.isclose(h[1], t[0], atol = joint_tol)]
-                    var j = this.cols.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(h[0], u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.cols) if np.isclose(h[0], t[0], atol = joint_tol)]
-                    var k = this.cols.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(h[2], u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.cols) if np.isclose(h[2], t[0], atol = joint_tol)]
+                    var i = this.rows.Select((t, _i) => (t, _i)).Where(u => MathExtensions.AlmostEquals(h.Item2, u.t.Item1, joint_tol)).Select(u => u._i).ToArray(); //i = [i for i, t in enumerate(self.rows) if np.isclose(h[1], t[0], atol = joint_tol)]
+                    var j = this.cols.Select((t, _j) => (t, _j)).Where(u => MathExtensions.AlmostEquals(h.Item1, u.t.Item1, joint_tol)).Select(u => u._j).ToArray(); //j = [j for j, t in enumerate(self.cols) if np.isclose(h[0], t[0], atol = joint_tol)]
+                    var k = this.cols.Select((t, _k) => (t, _k)).Where(u => MathExtensions.AlmostEquals(h.Item3, u.t.Item1, joint_tol)).Select(u => u._k).ToArray(); //k = [k for k, t in enumerate(self.cols) if np.isclose(h[2], t[0], atol = joint_tol)]
 
                     if (j.Length == 0) continue; // if not j // why not before k???
                     int J = j[0];

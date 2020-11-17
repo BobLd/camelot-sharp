@@ -172,9 +172,17 @@ namespace Camelot
         /// <param name="h_segments">List of vertical horizontal segments.</param>
         /// <returns>v_s : list - List of vertical line segments that lie inside table.
         /// h_s : list - List of horizontal line segments that lie inside table.</returns>
-        public static (List<float[]> v_s, List<float[]> h_s) segments_in_bbox((float, float, float, float) bbox, List<(float, float, float, float)> v_segments, List<(float, float, float, float)> h_segments)
+        public static (List<(float, float, float, float)> v_s, List<(float, float, float, float)> h_s) segments_in_bbox((float, float, float, float) bbox, List<(float, float, float, float)> v_segments, List<(float, float, float, float)> h_segments)
         {
-            throw new NotImplementedException();
+            var lb = (bbox.Item1, bbox.Item2);
+            var rt = (bbox.Item3, bbox.Item4);
+
+            //v_s = [v for v in v_segments if v[1] > lb[1] - 2 and v[3] < rt[1] + 2 and lb[0] -2 <= v[0] <= rt[0] + 2]
+            var v_s = v_segments.Where(v => v.Item2 > lb.Item2 - 2 && v.Item4 < rt.Item2 + 2 && lb.Item1 - 2 <= v.Item1 && v.Item1 <= rt.Item1 + 2).ToList();
+
+            //h_s = [h for h in h_segments if h[0] > lb[0] - 2 and h[2] < rt[0] + 2 and lb[1] -2 <= h[1] <= rt[1] + 2]
+            var h_s = h_segments.Where(h => h.Item1 > lb.Item1 - 2 && h.Item3 < rt.Item1 + 2 && lb.Item2 - 2 <= h.Item2 && h.Item2 <= rt.Item2 + 2).ToList();
+            return (v_s, h_s);
         }
 
         /// <summary>
@@ -318,7 +326,28 @@ namespace Camelot
         /// <returns>list</returns>
         public static List<float> merge_close_lines(IEnumerable<float> ar, int line_tol = 2)
         {
-            throw new NotImplementedException();
+            List<float> ret = new List<float>();
+            foreach (var a in ar)
+            {
+                if (ret.Count == 0)
+                {
+                    ret.Add(a);
+                }
+                else
+                {
+                    float temp = ret.Last(); // temp = ret[-1]
+                    if (MathExtensions.AlmostEquals(temp, a, line_tol))
+                    {
+                        temp = (temp + a) / 2f;
+                        ret[ret.Count - 1] = temp;
+                    }
+                    else
+                    {
+                        ret.Add(a);
+                    }
+                }
+            }
+            return ret;
         }
 
         /// <summary>
