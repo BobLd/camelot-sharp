@@ -542,9 +542,9 @@ namespace Camelot
 
             public List<(float, float, float, float)> _text { get; internal set; }
 
-            internal (List<(float, float, float, float)>, List<(float, float, float, float)>) _segments { get; set; }
+            internal (List<(float, float, float, float)>, List<(float, float, float, float)>) segments { get; set; }
 
-            internal List<TextEdge> _textedges { get; set; }
+            internal List<TextEdge> textedges { get; set; }
 
             /// <summary>
             /// Defines a table with coordinates relative to a left-bottom origin. (PDF coordinate space)
