@@ -2,7 +2,6 @@ using Camelot.ImageProcessing.OpenCvSharp4;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using UglyToad.PdfPig;
@@ -33,7 +32,7 @@ namespace Camelot.ImageProcessing.Tests
         }
 
         [Fact]
-        public void adaptive_threshold()
+        public void AdaptiveThreshold()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
 
@@ -54,19 +53,24 @@ namespace Camelot.ImageProcessing.Tests
             {
                 th.Save(@"Files\Output\PMC5055614_00002_threshold_bg.png");
             }
+
+            img.Dispose();
+            threshold.Dispose();
+            img_bg.Dispose();
+            threshold_bg.Dispose();
         }
 
         [Fact]
-        public void find_lines()
+        public void FindLines()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             // horizontal
-            (var _, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
+            (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
 
             // find_lines: no region, horizontal
-            (var _, var lines) = _imageProcessing.FindLines(threshold);
+            (var dmask, var lines) = _imageProcessing.FindLines(threshold);
             var expected_lines = new List<(int, int, int, int)>()
             {
                 (414, 377, 476, 377),
@@ -122,11 +126,16 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(expected_lines1.Count, lines1.Count);
             Assert.Equal(expected_lines1, lines1);
 
+            img.Dispose();
+            threshold.Dispose();
+            dmask.Dispose();
+            dmask1.Dispose();
+
             // vertical
-            (var _, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
+            (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
 
             // find_lines: no region, vertical
-            (var _, var lines_v) = _imageProcessing.FindLines(threshold_bg, direction: "vertical");
+            (var dmask_v, var lines_v) = _imageProcessing.FindLines(threshold_bg, direction: "vertical");
             var expected_lines2 = new List<(int, int, int, int)>()
             {
                 (55, 734, 55, 659),
@@ -152,7 +161,7 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(expected_lines2, lines_v);
 
             // find_lines: region, vertical
-            (var _, var lines_v1) = _imageProcessing.FindLines(threshold_bg, regions: new List<(int, int, int, int)>() { (0, 400, 190, 100) }, direction: "vertical");
+            (var dmask_v1, var lines_v1) = _imageProcessing.FindLines(threshold_bg, regions: new List<(int, int, int, int)>() { (0, 400, 190, 100) }, direction: "vertical");
             var expected_lines3 = new List<(int, int, int, int)>()
             {
                 (54, 501, 54, 416)
@@ -160,22 +169,28 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(expected_lines3.Count, lines_v1.Count);
             Assert.Equal(expected_lines3, lines_v1);
 
-            (var _, var lines_v2) = _imageProcessing.FindLines(threshold_bg, regions: new List<(int, int, int, int)>() { (0, 680, 190, 100) }, direction: "vertical");
+            (var dmask_v2, var lines_v2) = _imageProcessing.FindLines(threshold_bg, regions: new List<(int, int, int, int)>() { (0, 680, 190, 100) }, direction: "vertical");
             var expected_lines4 = new List<(int, int, int, int)>()
             {
                 (55, 734, 55, 681)
             };
             Assert.Equal(expected_lines4.Count, lines_v2.Count);
             Assert.Equal(expected_lines4, lines_v2);
+
+            img_bg.Dispose();
+            threshold_bg.Dispose();
+            dmask_v.Dispose();
+            dmask_v1.Dispose();
+            dmask_v2.Dispose();
         }
 
         [Fact]
-        public void find_contours()
+        public void FindContours()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
-            (var _, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
+            (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
             (var vertical_mask, var vertical_segments) = _imageProcessing.FindLines(threshold, direction: "vertical");
             (var horizontal_mask, var horizontal_segments) = _imageProcessing.FindLines(threshold); //, direction: "horizontal");
 
@@ -196,7 +211,7 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(expected_contours.Count, contours.Count);
             Assert.Equal(expected_contours, contours);
 
-            (var _, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
+            (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
             (var vertical_mask_bg, var vertical_segments_bg) = _imageProcessing.FindLines(threshold_bg, direction: "vertical");
             (var horizontal_mask_bg, var horizontal_segments_bg) = _imageProcessing.FindLines(threshold_bg, direction: "horizontal");
 
@@ -216,20 +231,35 @@ namespace Camelot.ImageProcessing.Tests
             };
             Assert.Equal(expected_contours_bg.Count, contours_bg.Count);
             Assert.Equal(expected_contours_bg, contours_bg);
+
+            img.Dispose();
+            threshold.Dispose();
+            vertical_mask.Dispose();
+            horizontal_mask.Dispose();
+
+            img_bg.Dispose();
+            threshold_bg.Dispose();
+            vertical_mask_bg.Dispose();
+            horizontal_mask_bg.Dispose();
         }
 
         [Fact]
-        public void find_joints()
+        public void FindJoints()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
-            (var _, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, true);
+            (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, true);
             (var vertical_mask, var vertical_segments) = _imageProcessing.FindLines(threshold, direction: "vertical");
             (var horizontal_mask, var horizontal_segments) = _imageProcessing.FindLines(threshold, direction: "horizontal");
 
             var contours = _imageProcessing.FindContours(vertical_mask, horizontal_mask);
             var table_bbox = _imageProcessing.FindJoints(contours, vertical_mask, horizontal_mask);
+
+            img.Dispose();
+            threshold.Dispose();
+            vertical_mask.Dispose();
+            horizontal_mask.Dispose();
 
             var expected = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>()
             {
