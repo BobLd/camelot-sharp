@@ -54,21 +54,6 @@ namespace Camelot.ImageProcessing.Tests
             {
                 th.Save(@"Files\Output\PMC5055614_00002_threshold_bg.png");
             }
-
-            using (var image = Image.FromFile(@"Files\PMC5055614_00002.jpg"))
-            using (var stream = new MemoryStream())
-            {
-                image.Save(stream, System.Drawing.Imaging.ImageFormat.Png);
-                (var imgArr, var thresholdArr) = _imageProcessing.adaptive_threshold(stream.ToArray(), false);
-
-                Assert.Equal(new int[] { 794, 596, 3 }, shape(Mat.FromImageData(imgArr)));
-                Assert.Equal(new int[] { 794, 596 }, shape(Mat.FromImageData(thresholdArr, ImreadModes.Grayscale)));
-
-                using (var ms = new MemoryStream(thresholdArr))
-                {
-                    Image.FromStream(ms).Save(@"Files\Output\PMC5055614_00002_threshold_arr_bg.png");
-                }
-            }
         }
 
         [Fact]
@@ -398,7 +383,7 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = document.GetPage(1);
 
-                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new BasicSystemDrawingProcessor(), false, 15, -2, 15, 0, null, null, out var table_bbox_unscaled);
+                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new BasicSystemDrawingProcessor(), false, 15, -2, 15, 0, null, null); //, out var table_bbox_unscaled);
 
                 Assert.Single(table_bbox);
                 Assert.Equal(new[] { (120.0f, 116.66666666666666f, 492.0f, 234.33333333333331f) }.ToList(), table_bbox.Keys.ToList(), new TestHelper.ListTuple4EqualityComparer(0));
@@ -431,9 +416,6 @@ namespace Camelot.ImageProcessing.Tests
                 };
                 Assert.Equal(horizontal_segments_expected.Count, horizontal_segments.Count);
                 Assert.Equal(horizontal_segments_expected, horizontal_segments, new TestHelper.ListTuple4EqualityComparer(1));
-
-                Assert.Single(table_bbox_unscaled);
-                Assert.Equal(52, table_bbox_unscaled.Values.First().Count()); // should be 57, difference comes from rendering
             }
         }
     }

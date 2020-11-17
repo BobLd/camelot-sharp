@@ -314,90 +314,89 @@ namespace Camelot.Parsers
                 this.line_scale,
                 this.iterations,
                 this.table_areas,
-                this.table_regions,
-                out this.table_bbox_unscaled);
+                this.table_regions);
         }
 
-        public void _generate_table_bbox_old()
-        {
-            List<(int, int, int, int)> scale_areas(List<(float x1, float y1, float x2, float y2)> areas, (float, float, float) img_scalers)
-            {
-                var scaled_areas = new List<(int, int, int, int)>();
-                foreach (var area in areas)
-                {
-                    (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf(area, img_scalers);
-                    scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
-                }
-                return scaled_areas;
-            }
+        //public void _generate_table_bbox_old()
+        //{
+        //    List<(int, int, int, int)> scale_areas(List<(float x1, float y1, float x2, float y2)> areas, (float, float, float) img_scalers)
+        //    {
+        //        var scaled_areas = new List<(int, int, int, int)>();
+        //        foreach (var area in areas)
+        //        {
+        //            (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf(area, img_scalers);
+        //            scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
+        //        }
+        //        return scaled_areas;
+        //    }
 
-            (this.image, this.threshold) = imageProcesser.adaptive_threshold(
-                this.image,
-                process_background: this.process_background,
-                blocksize: this.threshold_blocksize,
-                c: this.threshold_constant);
+        //    (this.image, this.threshold) = imageProcesser.adaptive_threshold(
+        //        this.image,
+        //        process_background: this.process_background,
+        //        blocksize: this.threshold_blocksize,
+        //        c: this.threshold_constant);
 
-            (int image_width, int image_height, int _) = imageProcesser.GetImageShape(this.image);
-            var image_width_scaler = image_width / (float)this.pdf_width;
-            var image_height_scaler = image_height / (float)this.pdf_height;
-            var pdf_width_scaler = this.pdf_width / (float)image_width;
-            var pdf_height_scaler = this.pdf_height / (float)image_height;
-            var image_scalers = (image_width_scaler, image_height_scaler, this.pdf_height);
-            var pdf_scalers = (pdf_width_scaler, pdf_height_scaler, image_height);
+        //    (int image_width, int image_height, int _) = imageProcesser.GetImageShape(this.image);
+        //    var image_width_scaler = image_width / (float)this.pdf_width;
+        //    var image_height_scaler = image_height / (float)this.pdf_height;
+        //    var pdf_width_scaler = this.pdf_width / (float)image_width;
+        //    var pdf_height_scaler = this.pdf_height / (float)image_height;
+        //    var image_scalers = (image_width_scaler, image_height_scaler, this.pdf_height);
+        //    var pdf_scalers = (pdf_width_scaler, pdf_height_scaler, image_height);
 
-            List<(int, int, int, int)> vertical_segments, horizontal_segments;
-            byte[] vertical_mask, horizontal_mask;
-            if (this.table_areas == null || this.table_areas.Count == 0)
-            {
-                List<(int, int, int, int)> regions = null;
-                if (this.table_regions != null && this.table_regions.Count > 0)
-                {
-                    regions = scale_areas(this.table_regions, image_scalers);
-                }
+        //    List<(int, int, int, int)> vertical_segments, horizontal_segments;
+        //    byte[] vertical_mask, horizontal_mask;
+        //    if (this.table_areas == null || this.table_areas.Count == 0)
+        //    {
+        //        List<(int, int, int, int)> regions = null;
+        //        if (this.table_regions != null && this.table_regions.Count > 0)
+        //        {
+        //            regions = scale_areas(this.table_regions, image_scalers);
+        //        }
 
-                (vertical_mask, vertical_segments) = imageProcesser.find_lines(
-                    this.threshold,
-                    regions: regions,
-                    direction: "vertical",
-                    line_scale: this.line_scale,
-                    iterations: this.iterations);
+        //        (vertical_mask, vertical_segments) = imageProcesser.find_lines(
+        //            this.threshold,
+        //            regions: regions,
+        //            direction: "vertical",
+        //            line_scale: this.line_scale,
+        //            iterations: this.iterations);
 
-                (horizontal_mask, horizontal_segments) = imageProcesser.find_lines(
-                    this.threshold,
-                    regions: regions,
-                    direction: "horizontal",
-                    line_scale: this.line_scale,
-                    iterations: this.iterations);
+        //        (horizontal_mask, horizontal_segments) = imageProcesser.find_lines(
+        //            this.threshold,
+        //            regions: regions,
+        //            direction: "horizontal",
+        //            line_scale: this.line_scale,
+        //            iterations: this.iterations);
 
-                var contours = imageProcesser.find_contours(vertical_mask, horizontal_mask);
-                table_bbox = imageProcesser.find_joints(contours, vertical_mask, horizontal_mask);
-            }
-            else
-            {
-                (vertical_mask, vertical_segments) = imageProcesser.find_lines(
-                    this.threshold,
-                    direction: "vertical",
-                    line_scale: this.line_scale,
-                    iterations: this.iterations);
+        //        var contours = imageProcesser.find_contours(vertical_mask, horizontal_mask);
+        //        table_bbox = imageProcesser.find_joints(contours, vertical_mask, horizontal_mask);
+        //    }
+        //    else
+        //    {
+        //        (vertical_mask, vertical_segments) = imageProcesser.find_lines(
+        //            this.threshold,
+        //            direction: "vertical",
+        //            line_scale: this.line_scale,
+        //            iterations: this.iterations);
 
-                (horizontal_mask, horizontal_segments) = imageProcesser.find_lines(
-                    this.threshold,
-                    direction: "horizontal",
-                    line_scale: this.line_scale,
-                    iterations: this.iterations);
+        //        (horizontal_mask, horizontal_segments) = imageProcesser.find_lines(
+        //            this.threshold,
+        //            direction: "horizontal",
+        //            line_scale: this.line_scale,
+        //            iterations: this.iterations);
 
-                var areas = scale_areas(this.table_areas, image_scalers);
-                table_bbox = imageProcesser.find_joints(areas, vertical_mask, horizontal_mask);
-            }
+        //        var areas = scale_areas(this.table_areas, image_scalers);
+        //        table_bbox = imageProcesser.find_joints(areas, vertical_mask, horizontal_mask);
+        //    }
 
-            this.table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
+        //    this.table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
 
-            (this.table_bbox, this.vertical_segments, this.horizontal_segments) = Utils.scale_image(
-                table_bbox,
-                vertical_segments,
-                horizontal_segments,
-                pdf_scalers);
-        }
+        //    (this.table_bbox, this.vertical_segments, this.horizontal_segments) = Utils.scale_image(
+        //        table_bbox,
+        //        vertical_segments,
+        //        horizontal_segments,
+        //        pdf_scalers);
+        //}
 
         Dictionary<string, List<TextLine>> t_bbox;
 

@@ -21,10 +21,31 @@ namespace Camelot.ImageProcessing
             return scaled_areas;
         }
 
+        /// <summary>
+        /// Process the page to extract the tables.
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="drawingProcessor"></param>
+        /// <param name="process_background">Whether or not to process lines that are in background.</param>
+        /// <param name="blocksize">Size of a pixel neighborhood that is used to calculate a threshold value for the pixel: 3, 5, 7, and so on.
+        /// <para>For more information, refer `OpenCV's adaptiveThreshold https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold`.</para></param>
+        /// <param name="c">Constant subtracted from the mean or weighted mean. Normally, it is positive but may be zero or negative as well.
+        /// <para>For more information, refer `OpenCV's adaptiveThreshold https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold`.</para></param>
+        /// <param name="line_scale">Factor by which the page dimensions will be divided to get smallest length of lines that should be detected.
+        /// <para>The larger this value, smaller the detected lines. Making it too large will lead to text being detected as lines.</para></param>
+        /// <param name="iterations">Number of times for erosion/dilation is applied.
+        /// <para>For more information, refer `OpenCV's dilate https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate`_.</para></param>
+        /// <param name="table_areas">List of page regions that contain tables of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in image coordinate space
+        /// <para>The 'find_contours()' step is skipped and the areas are used instead.</para>.</param>
+        /// <param name="table_regions">List of page regions that may contain tables of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in image coordinate space.</param>
+        /// <returns>table_bbox - Finds joints/intersections present inside each table boundary (in PDF corrdinate).
+        /// <para>vertical_segments - vertical lines (in PDF corrdinate)</para>
+        /// horizontal_segments - horizontal lines (in PDF corrdinate)</returns>
         public (Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox, List<(float, float, float, float)> vertical_segments, List<(float, float, float, float)> horizontal_segments)
-            Process(Page page, ImageProcessing.IDrawingProcessor drawingProcessor,
-            bool process_background, int threshold_blocksize, int threshold_constant, int line_scale, int iterations,
-            List<(float x1, float y1, float x2, float y2)> table_areas, List<(float x1, float y1, float x2, float y2)> table_regions, out Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled)
+            Process(Page page, IDrawingProcessor drawingProcessor, bool process_background,
+                    int blocksize = 15, int c = -2, int line_scale = 15, int iterations = 0,
+                    List<(float x1, float y1, float x2, float y2)> table_areas = null,
+                    List<(float x1, float y1, float x2, float y2)> table_regions = null)
         {
             Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
             Mat vertical_mask;
@@ -39,13 +60,13 @@ namespace Camelot.ImageProcessing
                 (Mat img, Mat threshold) = adaptive_threshold(
                     image,
                     process_background: process_background,
-                    blocksize: threshold_blocksize,
-                    c: threshold_constant);
+                    blocksize: blocksize,
+                    c: c);
 
                 int[] img_shape = image.shape();
                 (int image_width, int image_height) = (img_shape[1], img_shape[0]);
-                float image_width_scaler = image_width / (float)page.Width; //this.pdf_width;
-                float image_height_scaler = image_height / (float)page.Height; // this.pdf_height;
+                float image_width_scaler = image_width / (float)page.Width;
+                float image_height_scaler = image_height / (float)page.Height;
                 float pdf_width_scaler = (float)page.Width / (float)image_width;
                 float pdf_height_scaler = (float)page.Height / (float)image_height;
                 var image_scalers = (image_width_scaler, image_height_scaler, (float)page.Height);
@@ -99,7 +120,7 @@ namespace Camelot.ImageProcessing
                 img.Dispose();
                 threshold.Dispose();
 
-                table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
+                //table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
 
                 return Utils.scale_image(
                     table_bbox,
@@ -123,23 +144,6 @@ namespace Camelot.ImageProcessing
         public (Mat img, Mat threshold) adaptive_threshold(string imagename, bool process_background = false, int blocksize = 15, int c = -2)
         {
             return adaptive_threshold(Cv2.ImRead(imagename), process_background, blocksize, c);
-        }
-
-        /// <summary>
-        /// Thresholds an image using OpenCV's adaptiveThreshold.
-        /// </summary>
-        /// <param name="image">Image bytes array.</param>
-        /// <param name="process_background">Whether or not to process lines that are in background.</param>
-        /// <param name="blocksize">Size of a pixel neighborhood that is used to calculate a threshold value for the pixel: 3, 5, 7, and so on.
-        /// <para>For more information, refer `OpenCV's adaptiveThreshold https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold`.</para></param>
-        /// <param name="c">Constant subtracted from the mean or weighted mean. Normally, it is positive but may be zero or negative as well.
-        /// <para>For more information, refer `OpenCV's adaptiveThreshold https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold`.</para></param>
-        /// <returns>img : object - numpy.ndarray representing the original image.
-        /// <para>threshold : object - numpy.ndarray representing the thresholded image.</para></returns>
-        public (byte[] img, byte[] threshold) adaptive_threshold(byte[] image, bool process_background = false, int blocksize = 15, int c = -2)
-        {
-            (var img, var thr) = adaptive_threshold(Mat.FromImageData(image), process_background, blocksize, c);
-            return (img.ToBytes(), thr.ToBytes());
         }
 
         /// <summary>
@@ -181,10 +185,8 @@ namespace Camelot.ImageProcessing
         /// <param name="regions">List of page regions that may contain tables of the form x1,y1,x2,y2
         /// where(x1, y1) -> left-top and(x2, y2) -> right-bottom in image coordinate space.</param>
         /// <param name="direction">Specifies whether to find vertical or horizontal lines.</param>
-        /// <param name="line_scale">Factor by which the page dimensions will be divided to get
-        /// smallest length of lines that should be detected.
-        /// <para>The larger this value, smaller the detected lines. Making it
-        /// too large will lead to text being detected as lines.</para></param>
+        /// <param name="line_scale">Factor by which the page dimensions will be divided to get smallest length of lines that should be detected.
+        /// <para>The larger this value, smaller the detected lines. Making it too large will lead to text being detected as lines.</para></param>
         /// <param name="iterations">Number of times for erosion/dilation is applied.
         /// <para>For more information, refer `OpenCV's dilate https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate`_.</para></param>
         /// <returns>dmask : object - numpy.ndarray representing pixels where vertical/horizontal lines lie.
@@ -256,32 +258,6 @@ namespace Camelot.ImageProcessing
         }
 
         /// <summary>
-        /// Finds horizontal and vertical lines by applying morphological
-        /// transformations on an image.
-        /// </summary>
-        /// <param name="threshold">numpy.ndarray representing the thresholded image.</param>
-        /// <param name="regions">List of page regions that may contain tables of the form x1,y1,x2,y2
-        /// where(x1, y1) -> left-top and(x2, y2) -> right-bottom in image coordinate space.</param>
-        /// <param name="direction">Specifies whether to find vertical or horizontal lines.</param>
-        /// <param name="line_scale">Factor by which the page dimensions will be divided to get
-        /// smallest length of lines that should be detected.
-        /// <para>The larger this value, smaller the detected lines. Making it
-        /// too large will lead to text being detected as lines.</para></param>
-        /// <param name="iterations">Number of times for erosion/dilation is applied.
-        /// <para>For more information, refer `OpenCV's dilate https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate`_.</para></param>
-        /// <returns>dmask : object - numpy.ndarray representing pixels where vertical/horizontal lines lie.
-        /// <para>lines : list - List of tuples representing vertical/horizontal lines with
-        /// coordinates relative to a left-top origin in
-        public (byte[] dmask, List<(int, int, int, int)> lines) find_lines(byte[] threshold, List<(int x1, int y1, int x2, int y2)> regions = null, string direction = "horizontal", int line_scale = 15, int iterations = 0)
-        {
-            using (Mat thresholdMat = Mat.FromImageData(threshold))
-            {
-                (var d, var l) = find_lines(thresholdMat, regions, direction, line_scale, iterations);
-                return (d.ToBytes(), l);
-            }
-        }
-
-        /// <summary>
         /// Finds table boundaries using OpenCV's findContours.
         /// </summary>
         /// <param name="vertical">numpy.ndarray representing pixels where vertical lines lie.</param>
@@ -306,23 +282,6 @@ namespace Camelot.ImageProcessing
                     cont.Add((x, y, w, h));
                 }
                 return cont;
-            }
-        }
-
-        /// <summary>
-        /// Finds table boundaries using OpenCV's findContours.
-        /// </summary>
-        /// <param name="vertical">numpy.ndarray representing pixels where vertical lines lie.</param>
-        /// <param name="horizontal">numpy.ndarray representing pixels where horizontal lines lie.</param>
-        /// <returns>cont : list - List of tuples representing table boundaries. Each tuple is of
-        /// the form (x, y, w, h) where (x, y) -> left-top, w -> width and
-        /// h -> height in image coordinate space.</returns>
-        public List<(int x, int y, int w, int h)> find_contours(byte[] vertical, byte[] horizontal)
-        {
-            using (Mat verticalMat = Mat.FromImageData(vertical))
-            using (Mat horizontalMat = Mat.FromImageData(horizontal))
-            {
-                return find_contours(verticalMat, horizontalMat);
             }
         }
 
@@ -366,40 +325,9 @@ namespace Camelot.ImageProcessing
                         joint_coords.Add((c1, c2));
                     }
 
-                    //joint_coords = joint_coords.OrderByDescending(k => k.Item2).ThenByDescending(k => k.Item1).ToList(); // added by bobld
-
                     tables[(x, y + h, x + w, y)] = joint_coords;
                 }
                 return tables;
-            }
-        }
-
-        /// <summary>
-        /// Finds joints/intersections present inside each table boundary.
-        /// </summary>
-        /// <param name="contours">list - List of tuples representing table boundaries.Each tuple is of
-        /// the form (x, y, w, h) where (x, y) -> left-top, w -> width and
-        /// h -> height in image coordinate space.</param>
-        /// <param name="vertical">numpy.ndarray representing pixels where vertical lines lie.</param>
-        /// <param name="horizontal">numpy.ndarray representing pixels where horizontal lines lie.</param>
-        /// <returns>tables : dict - Dict with table boundaries as keys and list of intersections
-        /// in that boundary as their value.
-        /// Keys are of the form (x1, y1, x2, y2) where (x1, y1) -> lb and (x2, y2) -> rt in image coordinate space.</returns>
-        public Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> find_joints(List<(int x, int y, int w, int h)> contours, byte[] vertical, byte[] horizontal)
-        {
-            using (Mat verticalMat = Mat.FromImageData(vertical))
-            using (Mat horizontalMat = Mat.FromImageData(horizontal))
-            {
-                return find_joints(contours, verticalMat, horizontalMat);
-            }
-        }
-
-        public (int height, int width, int channels) GetImageShape(byte[] image)
-        {
-            using (Mat img = Mat.FromImageData(image))
-            {
-                var sh = img.shape();
-                return (sh[0], sh[1], sh[2]);
             }
         }
     }
