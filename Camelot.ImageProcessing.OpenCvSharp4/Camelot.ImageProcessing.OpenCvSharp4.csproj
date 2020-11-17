@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp3.1;netcoreapp2.1;netstandard2.0;netstandard2.1;net461;net462;net47</TargetFrameworks>
+    <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export, opencv, image</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Authors>BobLd</Authors>
+    <Version>0.0.1-alpha001</Version>
+    <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig). Contains OpenCvSharp4 for image processing used in the Lattice parser.</Description>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
+    <PackageReference Include="OpenCvSharp4">
+      <Version>4.5.0.20201013</Version>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.5.0.20201013" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Camelot\Camelot.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Files\PMC5055614_00002.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\PMC5055614_00002_threshold_bg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\PMC5055614_00002_threshold_nobg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
