@@ -8,7 +8,7 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
         /// <summary>
         /// Height, Width, Channels
         /// </summary>
-        public static int[] shape(this Mat mat)
+        public static int[] Shape(this Mat mat)
         {
             if (mat.Channels() > 1)
             {
