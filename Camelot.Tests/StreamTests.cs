@@ -8,7 +8,7 @@ namespace Camelot.Tests
 {
     public class StreamTests
     {
-        private readonly TextLine[] column_span_2_text = new TextLine[]
+        private readonly TextLine[] ColumnSpan2Text = new TextLine[]
         {
             TestHelper.MakeTextLine(336.144,687.721,366.278,697.221, "Preva-\n"),
             TestHelper.MakeTextLine(379.768,687.721,396.260,697.221, "C.I*\n"),
@@ -47,7 +47,7 @@ namespace Camelot.Tests
             TestHelper.MakeTextLine(193.016,461.892,214.771,471.392, "2400\n")
         };
 
-        private readonly TextLine[] column_span_2_horizontal_text = new TextLine[] // column_span_2_
+        private readonly TextLine[] ColumnSpan2HorizontalText = new TextLine[] // column_span_2_
         {
             TestHelper.MakeTextLine(107.603,726.010,532.528,737.510, "The sample size required for each State for various investigations among different\n"),
             TestHelper.MakeTextLine(79.257,711.610,314.029,723.110, "target groups of individuals are given below:\n"),
@@ -134,7 +134,7 @@ namespace Camelot.Tests
         {
             // column_span_2.pdf
             var cols = new List<(float, float)>() { (232.2996050000001f, 311.1031500000001f), (486.4540550000001f, 508.1806500000001f) };
-            var actual = Stream.AddColumns(cols, column_span_2_text, 2);
+            var actual = Stream.AddColumns(cols, ColumnSpan2Text, 2);
 
             var expected = new List<(float, float)>()
             {
@@ -150,52 +150,52 @@ namespace Camelot.Tests
         }
 
         [Fact]
-        public void _group_rows()
+        public void GroupRows()
         {
-            Assert.Equal(17, Stream.GroupRows(column_span_2_text, 2).Count);
+            Assert.Equal(17, Stream.GroupRows(ColumnSpan2Text, 2).Count);
         }
 
         [Fact]
-        public void _join_rows()
+        public void JoinRows()
         {
             var rows_grouped = new List<List<TextLine>>
             {
                 new List<TextLine>()
                 {
-                    column_span_2_text[30-13],
-                    column_span_2_text[31-13],
+                    ColumnSpan2Text[30-13],
+                    ColumnSpan2Text[31-13],
                     TestHelper.MakeTextLine(258.149,687.721,299.807,697.221, "Age/Sex/\n"),
-                    column_span_2_text[0],
-                    column_span_2_text[1],
-                    column_span_2_text[2],
+                    ColumnSpan2Text[0],
+                    ColumnSpan2Text[1],
+                    ColumnSpan2Text[2],
                     TestHelper.MakeTextLine(468.603,687.721,525.546,697.221 , "Sample size\n")
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[32-13],
+                    ColumnSpan2Text[32-13],
                     TestHelper.MakeTextLine(230.691,676.326,327.658,685.826, "Physiological  Group\n"),
-                    column_span_2_text[3],
-                    column_span_2_text[4],
+                    ColumnSpan2Text[3],
+                    ColumnSpan2Text[4],
                     TestHelper.MakeTextLine(476.143,676.326,518.304,685.826, "per State\n")
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[33-13]
+                    ColumnSpan2Text[33-13]
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[34-13],
-                    column_span_2_text[35-13],
+                    ColumnSpan2Text[34-13],
+                    ColumnSpan2Text[35-13],
                     TestHelper.MakeTextLine(232.423,632.767,430.014,642.267, "                           All the available individuals\n")
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[36-13]
+                    ColumnSpan2Text[36-13]
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[37-13],
-                    column_span_2_text[38-13],
+                    ColumnSpan2Text[37-13],
+                    ColumnSpan2Text[38-13],
                     TestHelper.MakeTextLine(232.395,591.267,427.753,600.767, "All the individuals partaking meals in the HH\n")
                 },
                 new List<TextLine>()
@@ -205,11 +205,11 @@ namespace Camelot.Tests
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[39-13],
-                    column_span_2_text[40-13],
-                    column_span_2_text[18-13],
-                    column_span_2_text[19-13],
-                    column_span_2_text[20-13]
+                    ColumnSpan2Text[39-13],
+                    ColumnSpan2Text[40-13],
+                    ColumnSpan2Text[18-13],
+                    ColumnSpan2Text[19-13],
+                    ColumnSpan2Text[20-13]
                 },
                 new List<TextLine>()
                 {
@@ -223,11 +223,11 @@ namespace Camelot.Tests
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[41-13],
-                    column_span_2_text[42-13],
-                    column_span_2_text[21-13],
-                    column_span_2_text[22-13],
-                    column_span_2_text[23-13],
+                    ColumnSpan2Text[41-13],
+                    ColumnSpan2Text[42-13],
+                    ColumnSpan2Text[21-13],
+                    ColumnSpan2Text[22-13],
+                    ColumnSpan2Text[23-13],
                 },
                 new List<TextLine>()
                 {
@@ -236,26 +236,26 @@ namespace Camelot.Tests
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[43-13],
-                    column_span_2_text[44-13],
+                    ColumnSpan2Text[43-13],
+                    ColumnSpan2Text[44-13],
                     TestHelper.MakeTextLine(232.319,484.683,296.513,495.969,"Men (> 18 yrs)\n"),
-                    column_span_2_text[24-13],
-                    column_span_2_text[25-13],
-                    column_span_2_text[26-13],
+                    ColumnSpan2Text[24-13],
+                    ColumnSpan2Text[25-13],
+                    ColumnSpan2Text[26-13],
                     TestHelper.MakeTextLine(486.437,484.683,508.163,494.183, "1728\n")
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[45-13]
+                    ColumnSpan2Text[45-13]
                 },
                 new List<TextLine>()
                 {
-                    column_span_2_text[46-13],
-                    column_span_2_text[47-13],
+                    ColumnSpan2Text[46-13],
+                    ColumnSpan2Text[47-13],
                     TestHelper.MakeTextLine(232.289,461.892,311.102,473.178, "Women (> 18 yrs)\n"),
-                    column_span_2_text[27-13],
-                    column_span_2_text[28-13],
-                    column_span_2_text[29-13],
+                    ColumnSpan2Text[27-13],
+                    ColumnSpan2Text[28-13],
+                    ColumnSpan2Text[29-13],
                     TestHelper.MakeTextLine(486.453,461.892,508.180,471.392, "1728\n")
                 },
                 new List<TextLine>()
@@ -291,7 +291,7 @@ namespace Camelot.Tests
         }
 
         [Fact]
-        public void _text_bbox()
+        public void TextBbox()
         {
             Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>()
             {
@@ -299,58 +299,58 @@ namespace Camelot.Tests
                     "horizontal",
                     new List<TextLine>()
                     {
-                        column_span_2_text[30-13],
-                        column_span_2_text[31-13],
+                        ColumnSpan2Text[30-13],
+                        ColumnSpan2Text[31-13],
                         TestHelper.MakeTextLine(258.149,687.721,299.807,697.221, "Age/Sex/\n"),
-                        column_span_2_text[0],
-                        column_span_2_text[1],
-                        column_span_2_text[2],
+                        ColumnSpan2Text[0],
+                        ColumnSpan2Text[1],
+                        ColumnSpan2Text[2],
                         TestHelper.MakeTextLine(468.603,687.721,525.546,697.221 , "Sample size\n"),
-                        column_span_2_text[32-13],
+                        ColumnSpan2Text[32-13],
                         TestHelper.MakeTextLine(230.691,676.326,327.658,685.826, "Physiological  Group\n"),
-                        column_span_2_text[3],
-                        column_span_2_text[4],
+                        ColumnSpan2Text[3],
+                        ColumnSpan2Text[4],
                         TestHelper.MakeTextLine(476.143,676.326,518.304,685.826, "per State\n"),
-                        column_span_2_text[33-13],
-                        column_span_2_text[34-13],
-                        column_span_2_text[35-13],
+                        ColumnSpan2Text[33-13],
+                        ColumnSpan2Text[34-13],
+                        ColumnSpan2Text[35-13],
                         TestHelper.MakeTextLine(232.423,632.767,430.014,642.267, "                           All the available individuals\n"),
-                        column_span_2_text[36-13],
-                        column_span_2_text[37-13],
-                        column_span_2_text[38-13],
+                        ColumnSpan2Text[36-13],
+                        ColumnSpan2Text[37-13],
+                        ColumnSpan2Text[38-13],
                         TestHelper.MakeTextLine(232.395,591.267,427.753,600.767, "All the individuals partaking meals in the HH\n"),
                         TestHelper.MakeTextLine(232.300,570.517,293.626,581.803, "Men (> 18yrs)\n"),
                         TestHelper.MakeTextLine(486.454,570.517,508.181,580.017, "1728\n"),
-                        column_span_2_text[39-13],
-                        column_span_2_text[40-13],
-                        column_span_2_text[18-13],
-                        column_span_2_text[19-13],
-                        column_span_2_text[20-13],
+                        ColumnSpan2Text[39-13],
+                        ColumnSpan2Text[40-13],
+                        ColumnSpan2Text[18-13],
+                        ColumnSpan2Text[19-13],
+                        ColumnSpan2Text[20-13],
                         TestHelper.MakeTextLine(232.300,549.767,311.103,561.053, "Women (> 18 yrs)\n"),
                         TestHelper.MakeTextLine(486.454,549.767,508.181,559.267, "1728\n"),
                         TestHelper.MakeTextLine(232.300,526.183,296.514,537.469, "Men (> 18 yrs)\n"),
                         TestHelper.MakeTextLine(486.454,526.183,508.181,535.683, "1825\n"),
-                        column_span_2_text[41-13],
-                        column_span_2_text[42-13],
-                        column_span_2_text[21-13],
-                        column_span_2_text[22-13],
-                        column_span_2_text[23-13],
+                        ColumnSpan2Text[41-13],
+                        ColumnSpan2Text[42-13],
+                        ColumnSpan2Text[21-13],
+                        ColumnSpan2Text[22-13],
+                        ColumnSpan2Text[23-13],
                         TestHelper.MakeTextLine(232.300,505.433,311.103,516.719, "Women (> 18 yrs)\n"),
                         TestHelper.MakeTextLine(486.454,505.433,508.181,514.933, "1825\n"),
-                        column_span_2_text[43-13],
-                        column_span_2_text[44-13],
+                        ColumnSpan2Text[43-13],
+                        ColumnSpan2Text[44-13],
                         TestHelper.MakeTextLine(232.319,484.683,296.513,495.969,"Men (> 18 yrs)\n"),
-                        column_span_2_text[24-13],
-                        column_span_2_text[25-13],
-                        column_span_2_text[26-13],
+                        ColumnSpan2Text[24-13],
+                        ColumnSpan2Text[25-13],
+                        ColumnSpan2Text[26-13],
                         TestHelper.MakeTextLine(486.437,484.683,508.163,494.183, "1728\n"),
-                        column_span_2_text[45-13],
-                        column_span_2_text[46-13],
-                        column_span_2_text[47-13],
+                        ColumnSpan2Text[45-13],
+                        ColumnSpan2Text[46-13],
+                        ColumnSpan2Text[47-13],
                         TestHelper.MakeTextLine(232.289,461.892,311.102,473.178, "Women (> 18 yrs)\n"),
-                        column_span_2_text[27-13],
-                        column_span_2_text[28-13],
-                        column_span_2_text[29-13],
+                        ColumnSpan2Text[27-13],
+                        ColumnSpan2Text[28-13],
+                        ColumnSpan2Text[29-13],
                         TestHelper.MakeTextLine(486.453,461.892,508.180,471.392, "1728\n"),
                         TestHelper.MakeTextLine(84.897,436.324,285.822,445.824, "*CI: Confidence Interval       # Design effect 2\n")
                     }
@@ -370,9 +370,9 @@ namespace Camelot.Tests
 
 #if DEBUG
         [Fact]
-        public void _generate_columns_and_rows()
+        public void GenerateColumnsAndRows()
         {
-            Stream stream = new Stream(column_span_2_horizontal_text, new List<TextLine>());
+            Stream stream = new Stream(ColumnSpan2HorizontalText, new List<TextLine>());
             var (cols, rows) = stream.GenerateColumnsAndRows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
 
             var cols_expected = new List<(float, float)>()
@@ -414,9 +414,9 @@ namespace Camelot.Tests
 
 #if DEBUG
         [Fact]
-        public void _generate_table()
+        public void GenerateTable()
         {
-            Stream stream = new Stream(column_span_2_horizontal_text, new List<TextLine>());
+            Stream stream = new Stream(ColumnSpan2HorizontalText, new List<TextLine>());
             (var cols, var rows) = stream.GenerateColumnsAndRows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
             var actual = stream.GenerateTable(0, cols, rows);
 
@@ -430,7 +430,7 @@ namespace Camelot.Tests
 #endif
 
         [Fact]
-        public void extract_tables()
+        public void ExtractTables()
         {
             Stream stream = new Stream();
             var tables = stream.ExtractTables(@"Files\foo.pdf");

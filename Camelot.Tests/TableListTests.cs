@@ -8,7 +8,7 @@ namespace Camelot.Tests
 {
     public class TableListTests
     {
-        private static Table makeTable(int? page, int? order)
+        private static Table MakeTable(int? page, int? order)
         {
             return new Table(new List<(float, float)>(), new List<(float, float)>())
             {
@@ -22,10 +22,10 @@ namespace Camelot.Tests
         {
             var table_list = new TableList(new List<Table>()
             {
-                makeTable(2, 1),
-                makeTable(1, 1),
-                makeTable(3, 4),
-                makeTable(1, 2)
+                MakeTable(2, 1),
+                MakeTable(1, 1),
+                MakeTable(3, 4),
+                MakeTable(1, 2)
             });
 
             table_list.Sort();
@@ -54,29 +54,29 @@ namespace Camelot.Tests
         {
             var table_list = new TableList(new List<Table>()
             {
-                makeTable(null, 1),
-                makeTable(1, 1),
-                makeTable(3, 4),
-                makeTable(1, 2)
+                MakeTable(null, 1),
+                MakeTable(1, 1),
+                MakeTable(3, 4),
+                MakeTable(1, 2)
             });
             Assert.Throws<InvalidOperationException>(() => table_list.Sort());
 
             var table_list_1 = new TableList(new List<Table>()
             {
-                makeTable(2, 1),
-                makeTable(1, 1),
-                makeTable(3, 4),
-                makeTable(1, null)
+                MakeTable(2, 1),
+                MakeTable(1, 1),
+                MakeTable(3, 4),
+                MakeTable(1, null)
             });
             Assert.Throws<InvalidOperationException>(() => table_list_1.Sort());
 
             // ok with null value
             var table_list_ok = new TableList(new List<Table>()
             {
-                makeTable(2, 1),
-                makeTable(1, 1),
-                makeTable(3, null),
-                makeTable(1, 2)
+                MakeTable(2, 1),
+                MakeTable(1, 1),
+                MakeTable(3, null),
+                MakeTable(1, 2)
             });
             table_list_ok.Sort();
 
