@@ -30,22 +30,22 @@ namespace Camelot
         /// <summary>
         /// BottomLeft.X = Left
         /// </summary>
-        public static float X0(this TextLine textLine) => (float)textLine.BoundingBox.X0();
+        public static float X0(this TextLine textLine) => textLine.BoundingBox.X0();
 
         /// <summary>
         /// BottomLeft.Y = Bottom
         /// </summary>
-        public static float Y0(this TextLine textLine) => (float)textLine.BoundingBox.Y0();
+        public static float Y0(this TextLine textLine) => textLine.BoundingBox.Y0();
 
         /// <summary>
         /// TopRight.X = Right
         /// </summary>
-        public static float X1(this TextLine textLine) => (float)textLine.BoundingBox.X1();
+        public static float X1(this TextLine textLine) => textLine.BoundingBox.X1();
 
         /// <summary>
         /// TopRight.Y = Top
         /// </summary>
-        public static float Y1(this TextLine textLine) => (float)textLine.BoundingBox.Y1();
+        public static float Y1(this TextLine textLine) => textLine.BoundingBox.Y1();
 
         /// <summary>
         /// (x0, y0, x1, y1)
@@ -74,21 +74,21 @@ namespace Camelot
         /// <summary>
         /// BottomLeft.X = Left
         /// </summary>
-        public static float X0(this Letter letter) => (float)letter.GlyphRectangle.X0();
+        public static float X0(this Letter letter) => letter.GlyphRectangle.X0();
 
         /// <summary>
         /// BottomLeft.Y = Bottom
         /// </summary>
-        public static float Y0(this Letter letter) => (float)letter.GlyphRectangle.Y0();
+        public static float Y0(this Letter letter) => letter.GlyphRectangle.Y0();
 
         /// <summary>
         /// TopRight.X = Right
         /// </summary>
-        public static float X1(this Letter letter) => (float)letter.GlyphRectangle.X1();
+        public static float X1(this Letter letter) => letter.GlyphRectangle.X1();
 
         /// <summary>
         /// TopRight.Y = Top
         /// </summary>
-        public static float Y1(this Letter letter) => (float)letter.GlyphRectangle.Y1();
+        public static float Y1(this Letter letter) => letter.GlyphRectangle.Y1();
     }
 }

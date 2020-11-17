@@ -15,15 +15,19 @@ namespace Camelot.Parsers
     /// </summary>
     public class Stream : BaseParser
     {
-        private readonly List<(float x1, float y1, float x2, float y2)> table_regions;
-        private readonly List<(float x1, float y1, float x2, float y2)> table_areas;
-        private readonly List<string> columns;
-        private readonly bool split_text;
-        private readonly bool flag_size;
-        private readonly string strip_text;
-        private readonly int edge_tol;
-        private readonly int row_tol;
-        private readonly int column_tol;
+        private readonly List<(float x1, float y1, float x2, float y2)> TableRegions;
+        private readonly List<(float x1, float y1, float x2, float y2)> TableAreas;
+        private readonly List<string> Columns;
+        private readonly bool SplitText;
+        private readonly bool FlagSize;
+        private readonly string StripText;
+        private readonly int EdgeTol;
+        private readonly int RowTol;
+        private readonly int ColumnTol;
+
+        private List<TextEdge> textEdges;
+        private Dictionary<(float, float, float, float), List<(float, float)>> tableBbox;
+        private Dictionary<string, List<TextLine>> tBbox;
 
 #if DEBUG
         [Obsolete("For debugging purpose only.")]
@@ -36,14 +40,14 @@ namespace Camelot.Parsers
                       int row_tol = 2,
                       int column_tol = 0) : base(null)
         {
-            this.HorizontalText = horizontal_text.ToList();
-            this.VerticalText = vertical_text.ToList();
-            this.split_text = split_text;
-            this.flag_size = flag_size;
-            this.strip_text = strip_text;
-            this.edge_tol = edge_tol;
-            this.row_tol = row_tol;
-            this.column_tol = column_tol;
+            HorizontalText = horizontal_text.ToList();
+            VerticalText = vertical_text.ToList();
+            SplitText = split_text;
+            FlagSize = flag_size;
+            StripText = strip_text;
+            EdgeTol = edge_tol;
+            RowTol = row_tol;
+            ColumnTol = column_tol;
         }
 #endif
 
@@ -80,16 +84,16 @@ namespace Camelot.Parsers
                       int column_tol = 0,
                       ILog log = null) : base(log)
         {
-            this.table_regions = table_regions;
-            this.table_areas = table_areas;
-            this.columns = columns;
-            this.ValidateColumns();
-            this.split_text = split_text;
-            this.flag_size = flag_size;
-            this.strip_text = strip_text;
-            this.edge_tol = edge_tol;
-            this.row_tol = row_tol;
-            this.column_tol = column_tol;
+            TableRegions = table_regions;
+            TableAreas = table_areas;
+            Columns = columns;
+            ValidateColumns();
+            SplitText = split_text;
+            FlagSize = flag_size;
+            StripText = strip_text;
+            EdgeTol = edge_tol;
+            RowTol = row_tol;
+            ColumnTol = column_tol;
         }
 
         /// <summary>
@@ -100,10 +104,10 @@ namespace Camelot.Parsers
         /// <returns>Tuple (x0, y0, x1, y1) in pdf coordinate space.</returns>
         public static (float x0, float y0, float x1, float y1) TextBbox(Dictionary<string, List<TextLine>> t_bbox)
         {
-            var xmin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X0())).Min();
-            var ymin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y0())).Min();
-            var xmax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X1())).Max();
-            var ymax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y1())).Max();
+            float xmin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X0())).Min();
+            float ymin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y0())).Min();
+            float xmax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X1())).Max();
+            float ymax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y1())).Max();
             return (xmin, ymin, xmax, ymax);
         }
 
@@ -236,7 +240,7 @@ namespace Camelot.Parsers
         {
             if (text?.Count > 0)
             {
-                var new_text = GroupRows(text, row_tol).ToList();
+                var new_text = GroupRows(text, row_tol);
                 var elementsMax = new_text.Max(r => r.Count);
                 var new_cols = new_text.Where(r => r.Count == elementsMax).SelectMany(r => r.Select(t => (t.X0(), t.X1())));
                 cols.AddRange(MergeColumns(new_cols.OrderBy(x => x)));
@@ -262,110 +266,102 @@ namespace Camelot.Parsers
 
         private void ValidateColumns()
         {
-            if (this.table_areas != null && this.columns != null)
+            if (TableAreas != null && Columns != null && TableAreas.Count != Columns.Count)
             {
-                if (table_areas.Count != this.columns.Count)
-                {
-                    throw new ArgumentException($"Length of {nameof(table_areas)} and {nameof(columns)} should be equal");
-                }
+                throw new ArgumentException($"Length of {nameof(TableAreas)} and {nameof(Columns)} should be equal");
             }
         }
 
         /// <summary>
-        /// A general implementation of the table detection algorithm
-        /// described by Anssi Nurminen's master's thesis.
+        /// A general implementation of the table detection algorithm described by Anssi Nurminen's master's thesis.
         /// <para>Link: https://dspace.cc.tut.fi/dpub/bitstream/handle/123456789/21520/Nurminen.pdf?sequence=3</para>
         /// Assumes that tables are situated relatively far apart vertically.
         /// </summary>
         /// <param name="textlines"></param>
-        /// <returns></returns>
-        private Dictionary<(float, float, float, float), object> NurminenTableDetection(List<TextLine> textlines)
+        private Dictionary<(float, float, float, float), List<(float, float)>> NurminenTableDetection(List<TextLine> textlines)
         {
             // TODO: add support for arabic text #141
             // sort textlines in reading order
             textlines = textlines.OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList();
-            var textedges = new TextEdges(this.edge_tol);
+            var textedges = new TextEdges(EdgeTol);
             // generate left, middle and right textedges
             textedges.Generate(textlines);
             // select relevant edges
             var relevant_textedges = textedges.GetRelevant();
-            this.textedges.AddRange(relevant_textedges); // extend
+            textEdges.AddRange(relevant_textedges); // extend
             // guess table areas using textlines and relevant edges
             var table_bbox = textedges.GetTableAreas(textlines, relevant_textedges);
             // treat whole page as table area if no table areas found
             if (table_bbox.Count == 0)
             {
-                table_bbox = new Dictionary<(float, float, float, float), object>()
+                table_bbox = new Dictionary<(float, float, float, float), List<(float, float)>>()
                 {
-                    {(0, 0, this.PdfWidth, this.PdfHeight), null }
+                    {(0, 0, PdfWidth, PdfHeight), null }
                 };
             }
 
             return table_bbox;
         }
 
-        private List<TextEdge> textedges;
-        private Dictionary<(float, float, float, float), object> table_bbox;
-
         private void GenerateTableBbox()
         {
-            this.textedges = new List<TextEdge>();
-            Dictionary<(float, float, float, float), object> table_bbox;
-            if (this.table_areas == null || this.table_areas.Count == 0)
+            textEdges = new List<TextEdge>();
+            Dictionary<(float, float, float, float), List<(float, float)>> table_bbox;
+            if (TableAreas == null || TableAreas.Count == 0)
             {
-                var hor_text = this.HorizontalText;
-                if (this.table_regions?.Count > 0)
+                var hor_text = HorizontalText;
+                if (TableRegions?.Count > 0)
                 {
                     // filter horizontal text
                     hor_text = new List<TextLine>();
-                    foreach (var region in this.table_regions)
+                    foreach (var region in TableRegions)
                     {
-                        var region_text = Utils.TextInBbox(region, this.HorizontalText);
+                        var region_text = Utils.TextInBbox(region, HorizontalText);
                         hor_text.AddRange(region_text);
                     }
                 }
                 // find tables based on nurminen's detection algorithm
-                table_bbox = this.NurminenTableDetection(hor_text);
+                table_bbox = NurminenTableDetection(hor_text);
             }
             else
             {
-                table_bbox = new Dictionary<(float, float, float, float), object>();
-                foreach (var area in this.table_areas)
+                table_bbox = new Dictionary<(float, float, float, float), List<(float, float)>>();
+                foreach (var area in TableAreas)
                 {
                     table_bbox[area] = null;
                 }
             }
-            this.table_bbox = table_bbox;
+            tableBbox = table_bbox;
         }
 
         public (List<(float, float)> cols, List<(float, float)> rows) GenerateColumnsAndRows(int table_idx, (float, float, float, float) tk)
         {
             // select elements which lie within table_bbox            
-            this.t_bbox = new Dictionary<string, List<TextLine>>()
+            tBbox = new Dictionary<string, List<TextLine>>()
             {
                 {
                     "horizontal",
-                    Utils.TextInBbox(tk, this.HorizontalText).OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList()
+                    Utils.TextInBbox(tk, HorizontalText).OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList()
                 },
                 {
                     "vertical",
-                    Utils.TextInBbox(tk, this.VerticalText).OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList()
+                    Utils.TextInBbox(tk, VerticalText).OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList()
                 }
             };
 
-            (float text_x_min, float text_y_min, float text_x_max, float text_y_max) = TextBbox(this.t_bbox);
-            var rows_grouped = GroupRows(this.t_bbox["horizontal"], this.row_tol);
+            (float text_x_min, float text_y_min, float text_x_max, float text_y_max) = TextBbox(tBbox);
+            var rows_grouped = GroupRows(tBbox["horizontal"], RowTol);
             var rows = JoinRows(rows_grouped, text_y_max, text_y_min);
             var elements = rows_grouped.Select(r => r.Count).ToList();
 
             List<(float, float)> cols;
-            if (this.columns?.Count > 0 && columns[table_idx] != "")
+            if (Columns?.Count > 0 && Columns[table_idx] != "")
             {
                 // user has to input boundary columns too
                 // take (0, pdf_width) by default
                 // similar to else condition
                 // len can't be 1
-                var cols_temp = this.columns[table_idx].Split(',').Select(c => float.Parse(c)).ToList();
+                var cols_temp = Columns[table_idx].Split(',').Select(c => float.Parse(c)).ToList();
                 cols_temp.Insert(0, text_x_min);
                 cols_temp.Add(text_x_max);
                 cols = Enumerable.Range(0, cols_temp.Count - 1).Select(i => (cols_temp[i], cols_temp[i + 1])).ToList();
@@ -380,7 +376,6 @@ namespace Camelot.Parsers
                 }
                 else
                 {
-                    // ncols = max(set(elements), key = elements.count)
                     int ncols = elements.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key; // get mode
                     if (ncols == 1)
                     {
@@ -401,19 +396,19 @@ namespace Camelot.Parsers
                     }
 
                     cols = rows_grouped.Where(r => r.Count == ncols).SelectMany(r => r.Select(t => (t.X0(), t.X1()))).ToList();
-                    cols = MergeColumns(cols.OrderBy(c => c), column_tol);
+                    cols = MergeColumns(cols.OrderBy(c => c), ColumnTol);
 
                     var inner_text = new List<TextLine>();
                     for (int i = 1; i < cols.Count; i++)
                     {
                         var left = cols[i - 1].Item2;
                         var right = cols[i].Item1;
-                        inner_text.AddRange(this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.X0() > left && t.X1() < right)).ToList());
+                        inner_text.AddRange(tBbox.SelectMany(dir => dir.Value.Where(t => t.X0() > left && t.X1() < right)).ToList());
                     }
 
-                    var outer_text = this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.X0() > cols.Last().Item2 || t.X1() < cols[0].Item1)).ToList();
+                    var outer_text = tBbox.SelectMany(dir => dir.Value.Where(t => t.X0() > cols.Last().Item2 || t.X1() < cols[0].Item1)).ToList();
                     inner_text.AddRange(outer_text);
-                    cols = AddColumns(cols, inner_text, this.row_tol);
+                    cols = AddColumns(cols, inner_text, RowTol);
                     cols = JoinColumns(cols, text_x_min, text_x_max);
                 }
             }
@@ -421,12 +416,10 @@ namespace Camelot.Parsers
             return (cols, rows);
         }
 
-        private Dictionary<string, List<TextLine>> t_bbox;
-
         /// <summary>
         /// TODO: BobLD - have a single function for stream and lattice
         /// </summary>
-        public Table GenerateTable(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs)
+        public Table GenerateTable(int table_idx, List<(float, float)> cols, List<(float, float)> rows)
         {
             Table table = new Table(cols, rows);
             table.SetAllEdges();
@@ -436,15 +429,15 @@ namespace Camelot.Parsers
             // sorted on x-coordinate based on reading order i.e. LTR or RTL
             foreach (var direction in new[] { "vertical", "horizontal" })
             {
-                foreach (var t in this.t_bbox[direction])
+                foreach (var t in tBbox[direction])
                 {
                     (var indices, var error) = Utils.GetTableIndex(
                         table,
                         t,
                         direction,
-                        split_text: this.split_text,
-                        flag_size: this.flag_size,
-                        strip_text: this.strip_text,
+                        split_text: SplitText,
+                        flag_size: FlagSize,
+                        strip_text: StripText,
                         log: log);
 
                     //if indices[:2] != (-1, -1):
@@ -470,8 +463,7 @@ namespace Camelot.Parsers
             var accuracy = Utils.ComputeAccuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) }); //[[100, pos_errors]]);
 
             var data = table.Data();
-            //table.df = pd.DataFrame(data)
-            table.Shape = (data.Count, data.Max(r => r.Count)); //table.df.shape;
+            table.Shape = (data.Count, data.Max(r => r.Count));
 
             var whitespace = Utils.ComputeWhitespace(data);
             table.Flavor = "stream";
@@ -482,27 +474,27 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float, float, float, float)>();
-            _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
-            _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table.Text = _text;
             table.Segments = (null, null);
-            table.Textedges = this.textedges;
+            table.Textedges = textEdges;
 
             return table;
         }
 
         public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
-            this.GenerateLayout(filename, layout_kwargs);
-            var base_filename = Path.GetFileName(this.RootName); //os.path.basename(self.rootname)
+            GenerateLayout(filename, layout_kwargs);
+            var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
                 log?.Debug($"Processing {base_filename}");
             }
 
-            if (this.HorizontalText == null || this.HorizontalText.Count == 0)
+            if (HorizontalText == null || HorizontalText.Count == 0)
             {
-                if (this.Images?.Count > 0)
+                if (Images?.Count > 0)
                 {
                     log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
                 }
@@ -513,15 +505,15 @@ namespace Camelot.Parsers
                 return new List<Table>();
             }
 
-            this.GenerateTableBbox();
+            GenerateTableBbox();
 
             var _tables = new List<Table>();
             // sort tables based on y-coord
             int table_idx = 0;
-            foreach (var tk in this.table_bbox.Keys.OrderByDescending(kvp => kvp.Item2))
+            foreach (var tk in tableBbox.Keys.OrderByDescending(kvp => kvp.Item2))
             {
-                (var cols, var rows) = this.GenerateColumnsAndRows(table_idx, tk);
-                var table = this.GenerateTable(table_idx, cols, rows);
+                (var cols, var rows) = GenerateColumnsAndRows(table_idx, tk);
+                var table = GenerateTable(table_idx, cols, rows);
                 table.Bbox = tk;
                 _tables.Add(table);
                 table_idx++;

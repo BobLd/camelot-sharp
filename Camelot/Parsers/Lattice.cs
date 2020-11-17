@@ -150,8 +150,7 @@ namespace Camelot.Parsers
                        int threshold_constant = -2,
                        int iterations = 0,
                        int resolution = 300,
-                       ILog log = null,
-                       params string[] kwargs) : base(log)
+                       ILog log = null) : base(log)
         {
             ImageProcesser = imageProcesser;
             DrawingProcessor = drawingProcessor;
@@ -299,39 +298,38 @@ namespace Camelot.Parsers
 
         private void GenerateTableBbox()
         {
-            (this.tableBbox, this.verticalSegments, this.horizontalSegments) = ImageProcesser.Process(
-                this.Layout,
-                this.DrawingProcessor,
-                this.ProcessBackground,
-                this.ThresholdBlocksize,
-                this.ThresholdConstant,
-                this.LineScale,
-                this.Iterations,
-                this.TableAreas,
-                this.TableRegions);
+            (tableBbox, verticalSegments, horizontalSegments) = ImageProcesser.Process(
+                Layout,
+                DrawingProcessor,
+                ProcessBackground,
+                ThresholdBlocksize,
+                ThresholdConstant,
+                LineScale,
+                Iterations,
+                TableAreas,
+                TableRegions);
         }
 
         public (List<(float, float)> cols, List<(float, float)> rows, List<(float, float, float, float)> v_s, List<(float, float, float, float)> h_s) GenerateColumnsAndRows(int table_idx, (float, float, float, float) tk)
         {
             // select elements which lie within table_bbox
-            Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>();
-            (var v_s, var h_s) = Utils.SegmentsInBbox(tk, this.verticalSegments, this.horizontalSegments);
-            t_bbox["horizontal"] = Utils.TextInBbox(tk, this.HorizontalText);
-            t_bbox["vertical"] = Utils.TextInBbox(tk, this.VerticalText);
+            tBbox = new Dictionary<string, List<TextLine>>()
+            {
+                { "horizontal", Utils.TextInBbox(tk, HorizontalText).OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList() },
+                { "vertical", Utils.TextInBbox(tk, VerticalText).OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList() }
+            };
 
-            t_bbox["horizontal"] = t_bbox["horizontal"].OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList();
-            t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList();
+            (var v_s, var h_s) = Utils.SegmentsInBbox(tk, verticalSegments, horizontalSegments);
 
-            this.tBbox = t_bbox;
-            var cols = this.tableBbox[tk].ConvertAll(x => x.Item1);
-            var rows = this.tableBbox[tk].ConvertAll(x => x.Item2);
+            var cols = tableBbox[tk].ConvertAll(x => x.Item1);
+            var rows = tableBbox[tk].ConvertAll(x => x.Item2);
 
             cols.AddRange(new[] { tk.Item1, tk.Item3 });
             rows.AddRange(new[] { tk.Item2, tk.Item4 });
 
             // sort horizontal and vertical segments
-            cols = Utils.MergeCloseLines(cols.OrderBy(r => r), line_tol: this.LineTol);
-            rows = Utils.MergeCloseLines(rows.OrderByDescending(c => c), line_tol: this.LineTol);
+            cols = Utils.MergeCloseLines(cols.OrderBy(r => r), line_tol: LineTol);
+            rows = Utils.MergeCloseLines(rows.OrderByDescending(c => c), line_tol: LineTol);
 
             // make grid using x and y coord of shortlisted rows and cols
             var colsT = Enumerable.Range(0, cols.Count - 1).Select(i => (cols[i], cols[i + 1])).ToList();
@@ -347,12 +345,12 @@ namespace Camelot.Parsers
         {
             if (v_s == null || h_s == null)
             {
-                throw new ArgumentNullException($"No segments found on {this.RootName}");
+                throw new ArgumentNullException($"No segments found on {RootName}");
             }
 
             var table = new Table(cols, rows);
             // set table edges to True using ver+hor lines
-            table = table.SetEdges(v_s, h_s, joint_tol: this.JointTol);
+            table = table.SetEdges(v_s, h_s, joint_tol: JointTol);
             // set table border edges to True
             table = table.SetBorder();
             // set spanning cells to True
@@ -364,14 +362,14 @@ namespace Camelot.Parsers
 
             foreach (string direction in new[] { "vertical", "horizontal" })
             {
-                foreach (var t in this.tBbox[direction])
+                foreach (var t in tBbox[direction])
                 {
                     (var indices, var error) = Utils.GetTableIndex(table,
                         t,
                         direction,
-                        split_text: this.SplitText,
-                        flag_size: this.FlagSize,
-                        strip_text: this.StripText,
+                        split_text: SplitText,
+                        flag_size: FlagSize,
+                        strip_text: StripText,
                         log: log);
 
                     // CAREFUL HERE - Not sure the Python version is correct
@@ -382,7 +380,7 @@ namespace Camelot.Parsers
                     if (indices[0].r_idx != -1 && indices[0].c_idx != -1) // if indices[:2] != (-1, -1):
                     {
                         pos_errors.Add(error);
-                        indices = Lattice.ReduceIndex(table, indices, shift_text: this.ShiftText);
+                        indices = ReduceIndex(table, indices, shift_text: ShiftText);
                         foreach ((var r_idx, var c_idx, var text) in indices)
                         {
                             table.Cells[r_idx][c_idx].Text = text + "\n";
@@ -392,9 +390,9 @@ namespace Camelot.Parsers
             }
             var accuracy = Utils.ComputeAccuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) });
 
-            if (this.CopyText != null)
+            if (CopyText != null)
             {
-                table = CopySpanningText(table, copy_text: this.CopyText);
+                table = CopySpanningText(table, copy_text: CopyText);
             }
 
             var data = table.Data();
@@ -410,10 +408,10 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float x0, float y0, float x1, float y1)>();
-            _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
-            _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table.Text = _text;
-            table.Segments = (this.verticalSegments, this.horizontalSegments);
+            table.Segments = (verticalSegments, horizontalSegments);
             table.Textedges = null;
 
             return table;
@@ -422,13 +420,13 @@ namespace Camelot.Parsers
         public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
             base.GenerateLayout(filename, layout_kwargs);
-            var base_filename = Path.GetFileName(this.RootName); //os.path.basename(self.rootname)
+            var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
                 log?.Debug($"Processing {base_filename}");
             }
 
-            if (base.HorizontalText == null || base.HorizontalText.Count == 0)
+            if (HorizontalText == null || HorizontalText.Count == 0)
             {
                 if (base.Images.Count > 0)
                 {
@@ -441,15 +439,15 @@ namespace Camelot.Parsers
                 return null;
             }
 
-            this.GenerateTableBbox();
+            GenerateTableBbox();
 
             var _tables = new List<Table>();
             // sort tables based on y-coord
             int table_idx = 0;
-            foreach (var tk in this.tableBbox.Keys.OrderByDescending(kvp => kvp.y1))
+            foreach (var tk in tableBbox.Keys.OrderByDescending(kvp => kvp.y1))
             {
-                (var cols, var rows, var v_s, var h_s) = this.GenerateColumnsAndRows(table_idx, tk);
-                var table = this.GenerateTable(table_idx, cols, rows, v_s: v_s, h_s: h_s);
+                (var cols, var rows, var v_s, var h_s) = GenerateColumnsAndRows(table_idx, tk);
+                var table = GenerateTable(table_idx, cols, rows, v_s: v_s, h_s: h_s);
                 table.Bbox = tk;
                 _tables.Add(table);
                 table_idx++;
