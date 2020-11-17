@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using UglyToad.PdfPig.Content;
 
 namespace Camelot.ImageProcessing
