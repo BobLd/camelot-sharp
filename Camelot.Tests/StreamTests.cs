@@ -134,7 +134,7 @@ namespace Camelot.Tests
         {
             // column_span_2.pdf
             var cols = new List<(float, float)>() { (232.2996050000001f, 311.1031500000001f), (486.4540550000001f, 508.1806500000001f) };
-            var actual = Stream._add_columns(cols, column_span_2_text, 2);
+            var actual = Stream.AddColumns(cols, column_span_2_text, 2);
 
             var expected = new List<(float, float)>()
             {
@@ -152,7 +152,7 @@ namespace Camelot.Tests
         [Fact]
         public void _group_rows()
         {
-            Assert.Equal(17, Stream._group_rows(column_span_2_text, 2).Count);
+            Assert.Equal(17, Stream.GroupRows(column_span_2_text, 2).Count);
         }
 
         [Fact]
@@ -264,7 +264,7 @@ namespace Camelot.Tests
                 }
             };
 
-            var actual = Stream._join_rows(rows_grouped, 697.2215f, 436.32394999999985f);
+            var actual = Stream.JoinRows(rows_grouped, 697.2215f, 436.32394999999985f);
 
             List<(float, float)> expected = new List<(float, float)>()
             {
@@ -361,7 +361,7 @@ namespace Camelot.Tests
                 },
             };
 
-            var (x0, y0, x1, y1) = Stream._text_bbox(t_bbox);
+            var (x0, y0, x1, y1) = Stream.TextBbox(t_bbox);
             Assert.Equal(84.89665500000015f, x0, 3);
             Assert.Equal(436.32394999999985f, y0, 3);
             Assert.Equal(525.5457000000002f, x1, 3);
@@ -373,7 +373,7 @@ namespace Camelot.Tests
         public void _generate_columns_and_rows()
         {
             Stream stream = new Stream(column_span_2_horizontal_text, new List<TextLine>());
-            var (cols, rows) = stream._generate_columns_and_rows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
+            var (cols, rows) = stream.GenerateColumnsAndRows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
 
             var cols_expected = new List<(float, float)>()
             {
@@ -417,8 +417,8 @@ namespace Camelot.Tests
         public void _generate_table()
         {
             Stream stream = new Stream(column_span_2_horizontal_text, new List<TextLine>());
-            (var cols, var rows) = stream._generate_columns_and_rows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
-            var actual = stream._generate_table(0, cols, rows);
+            (var cols, var rows) = stream.GenerateColumnsAndRows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
+            var actual = stream.GenerateTable(0, cols, rows);
 
             Assert.Equal((16, 5), actual.Shape);
             Assert.Equal(78, actual._text.Count);

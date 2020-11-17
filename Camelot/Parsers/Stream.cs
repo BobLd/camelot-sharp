@@ -83,7 +83,7 @@ namespace Camelot.Parsers
             this.table_regions = table_regions;
             this.table_areas = table_areas;
             this.columns = columns;
-            this._validate_columns();
+            this.ValidateColumns();
             this.split_text = split_text;
             this.flag_size = flag_size;
             this.strip_text = strip_text;
@@ -98,7 +98,7 @@ namespace Camelot.Parsers
         /// <param name="t_bbox">Dict with two keys 'horizontal' and 'vertical' with lists of
         /// LTTextLineHorizontals and LTTextLineVerticals respectively.</param>
         /// <returns>Tuple (x0, y0, x1, y1) in pdf coordinate space.</returns>
-        public static (float x0, float y0, float x1, float y1) _text_bbox(Dictionary<string, List<TextLine>> t_bbox)
+        public static (float x0, float y0, float x1, float y1) TextBbox(Dictionary<string, List<TextLine>> t_bbox)
         {
             var xmin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X0())).Min();
             var ymin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y0())).Min();
@@ -114,7 +114,7 @@ namespace Camelot.Parsers
         /// <param name="text">List of PDFMiner text objects.</param>
         /// <param name="row_tol">int, optional (default: 2)</param>
         /// <returns>rows : list - Two-dimensional list of text objects grouped into rows.</returns>
-        public static IReadOnlyList<IReadOnlyList<TextLine>> _group_rows(IReadOnlyList<TextLine> text, int row_tol = 2)
+        public static IReadOnlyList<IReadOnlyList<TextLine>> GroupRows(IReadOnlyList<TextLine> text, int row_tol = 2)
         {
             float row_y = 0;
             var rows = new List<List<TextLine>>();
@@ -154,7 +154,7 @@ namespace Camelot.Parsers
         /// <param name="l">List of column x-coordinate tuples.</param>
         /// <param name="column_tol">int, optional (default: 0)</param>
         /// <returns>merged : list - List of merged column x-coordinate tuples.</returns>
-        private static List<(float, float)> _merge_columns(IEnumerable<(float, float)> l, int column_tol = 0)
+        private static List<(float, float)> MergeColumns(IEnumerable<(float, float)> l, int column_tol = 0)
         {
             var merged = new List<(float, float)>();
             foreach (var higher in l)
@@ -215,7 +215,7 @@ namespace Camelot.Parsers
         /// <param name="text_y_max"></param>
         /// <param name="text_y_min"></param>
         /// <returns>rows : list - List of continuous row y-coordinate tuples.</returns>
-        public static List<(float, float)> _join_rows(IReadOnlyList<IReadOnlyList<TextLine>> rows_grouped, float text_y_max, float text_y_min)
+        public static List<(float, float)> JoinRows(IReadOnlyList<IReadOnlyList<TextLine>> rows_grouped, float text_y_max, float text_y_min)
         {
             var row_mids = rows_grouped.Select(r => r.Count > 0 ? r.Sum(t => (t.Y0() + t.Y1()) / 2f) / r.Count : 0).ToList();
             var rows = Enumerable.Range(1, row_mids.Count - 1).Select(i => (row_mids[i] + row_mids[i - 1]) / 2f).ToList();
@@ -232,14 +232,14 @@ namespace Camelot.Parsers
         /// <param name="text">List of PDFMiner text objects.</param>
         /// <param name="row_tol"></param>
         /// <returns>cols : list - Updated list of column x-coordinate tuples.</returns>
-        public static List<(float, float)> _add_columns(List<(float, float)> cols, IReadOnlyList<TextLine> text, int row_tol)
+        public static List<(float, float)> AddColumns(List<(float, float)> cols, IReadOnlyList<TextLine> text, int row_tol)
         {
             if (text?.Count > 0)
             {
-                var new_text = _group_rows(text, row_tol).ToList();
+                var new_text = GroupRows(text, row_tol).ToList();
                 var elementsMax = new_text.Max(r => r.Count);
                 var new_cols = new_text.Where(r => r.Count == elementsMax).SelectMany(r => r.Select(t => (t.X0(), t.X1())));
-                cols.AddRange(_merge_columns(new_cols.OrderBy(x => x)));
+                cols.AddRange(MergeColumns(new_cols.OrderBy(x => x)));
             }
             return cols;
         }
@@ -251,7 +251,7 @@ namespace Camelot.Parsers
         /// <param name="text_x_min"></param>
         /// <param name="text_x_max"></param>
         /// <returns>cols : list - Updated list of column x-coordinate tuples.</returns>
-        private static List<(float, float)> _join_columns(List<(float, float)> cols, float text_x_min, float text_x_max)
+        private static List<(float, float)> JoinColumns(List<(float, float)> cols, float text_x_min, float text_x_max)
         {
             cols.Sort();
             var col = Enumerable.Range(1, cols.Count - 1).Select(i => (cols[i].Item1 + cols[i - 1].Item2) / 2f).ToList();
@@ -260,7 +260,7 @@ namespace Camelot.Parsers
             return Enumerable.Range(0, col.Count - 1).Select(i => (col[i], col[i + 1])).ToList();
         }
 
-        private void _validate_columns()
+        private void ValidateColumns()
         {
             if (this.table_areas != null && this.columns != null)
             {
@@ -279,7 +279,7 @@ namespace Camelot.Parsers
         /// </summary>
         /// <param name="textlines"></param>
         /// <returns></returns>
-        private Dictionary<(float, float, float, float), object> _nurminen_table_detection(List<TextLine> textlines)
+        private Dictionary<(float, float, float, float), object> NurminenTableDetection(List<TextLine> textlines)
         {
             // TODO: add support for arabic text #141
             // sort textlines in reading order
@@ -307,7 +307,7 @@ namespace Camelot.Parsers
         private List<TextEdge> textedges;
         private Dictionary<(float, float, float, float), object> table_bbox;
 
-        private void _generate_table_bbox()
+        private void GenerateTableBbox()
         {
             this.textedges = new List<TextEdge>();
             Dictionary<(float, float, float, float), object> table_bbox;
@@ -325,7 +325,7 @@ namespace Camelot.Parsers
                     }
                 }
                 // find tables based on nurminen's detection algorithm
-                table_bbox = this._nurminen_table_detection(hor_text);
+                table_bbox = this.NurminenTableDetection(hor_text);
             }
             else
             {
@@ -338,7 +338,7 @@ namespace Camelot.Parsers
             this.table_bbox = table_bbox;
         }
 
-        public (List<(float, float)> cols, List<(float, float)> rows) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
+        public (List<(float, float)> cols, List<(float, float)> rows) GenerateColumnsAndRows(int table_idx, (float, float, float, float) tk)
         {
             // select elements which lie within table_bbox            
             this.t_bbox = new Dictionary<string, List<TextLine>>()
@@ -353,9 +353,9 @@ namespace Camelot.Parsers
                 }
             };
 
-            (float text_x_min, float text_y_min, float text_x_max, float text_y_max) = _text_bbox(this.t_bbox);
-            var rows_grouped = _group_rows(this.t_bbox["horizontal"], this.row_tol);
-            var rows = _join_rows(rows_grouped, text_y_max, text_y_min);
+            (float text_x_min, float text_y_min, float text_x_max, float text_y_max) = TextBbox(this.t_bbox);
+            var rows_grouped = GroupRows(this.t_bbox["horizontal"], this.row_tol);
+            var rows = JoinRows(rows_grouped, text_y_max, text_y_min);
             var elements = rows_grouped.Select(r => r.Count).ToList();
 
             List<(float, float)> cols;
@@ -401,7 +401,7 @@ namespace Camelot.Parsers
                     }
 
                     cols = rows_grouped.Where(r => r.Count == ncols).SelectMany(r => r.Select(t => (t.X0(), t.X1()))).ToList();
-                    cols = _merge_columns(cols.OrderBy(c => c), column_tol);
+                    cols = MergeColumns(cols.OrderBy(c => c), column_tol);
 
                     var inner_text = new List<TextLine>();
                     for (int i = 1; i < cols.Count; i++)
@@ -413,8 +413,8 @@ namespace Camelot.Parsers
 
                     var outer_text = this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.X0() > cols.Last().Item2 || t.X1() < cols[0].Item1)).ToList();
                     inner_text.AddRange(outer_text);
-                    cols = _add_columns(cols, inner_text, this.row_tol);
-                    cols = _join_columns(cols, text_x_min, text_x_max);
+                    cols = AddColumns(cols, inner_text, this.row_tol);
+                    cols = JoinColumns(cols, text_x_min, text_x_max);
                 }
             }
 
@@ -426,7 +426,7 @@ namespace Camelot.Parsers
         /// <summary>
         /// TODO: BobLD - have a single function for stream and lattice
         /// </summary>
-        public Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs)
+        public Table GenerateTable(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs)
         {
             Table table = new Table(cols, rows);
             table.SetAllEdges();
@@ -513,15 +513,15 @@ namespace Camelot.Parsers
                 return new List<Table>();
             }
 
-            this._generate_table_bbox();
+            this.GenerateTableBbox();
 
             var _tables = new List<Table>();
             // sort tables based on y-coord
             int table_idx = 0;
             foreach (var tk in this.table_bbox.Keys.OrderByDescending(kvp => kvp.Item2))
             {
-                (var cols, var rows) = this._generate_columns_and_rows(table_idx, tk);
-                var table = this._generate_table(table_idx, cols, rows);
+                (var cols, var rows) = this.GenerateColumnsAndRows(table_idx, tk);
+                var table = this.GenerateTable(table_idx, cols, rows);
                 table._bbox = tk;
                 _tables.Add(table);
                 table_idx++;
