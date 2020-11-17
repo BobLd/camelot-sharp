@@ -111,7 +111,9 @@ namespace Camelot
             private readonly Dictionary<string, List<TextEdge>> _textedges;
 #if DEBUG
             [Obsolete("For debugging purpose only.")]
+#pragma warning disable RCS1085 // Use auto-implemented property.
             public Dictionary<string, List<TextEdge>> TextedgesForTest => _textedges;
+#pragma warning restore RCS1085 // Use auto-implemented property.
 #endif
 
             /// <summary>

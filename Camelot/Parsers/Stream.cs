@@ -36,8 +36,8 @@ namespace Camelot.Parsers
                       int row_tol = 2,
                       int column_tol = 0) : base(null)
         {
-            this.horizontal_text = horizontal_text.ToList();
-            this.vertical_text = vertical_text.ToList();
+            this.HorizontalText = horizontal_text.ToList();
+            this.VerticalText = vertical_text.ToList();
             this.split_text = split_text;
             this.flag_size = flag_size;
             this.strip_text = strip_text;
@@ -297,7 +297,7 @@ namespace Camelot.Parsers
             {
                 table_bbox = new Dictionary<(float, float, float, float), object>()
                 {
-                    {(0, 0, this.pdf_width, this.pdf_height), null }
+                    {(0, 0, this.PdfWidth, this.PdfHeight), null }
                 };
             }
 
@@ -313,14 +313,14 @@ namespace Camelot.Parsers
             Dictionary<(float, float, float, float), object> table_bbox;
             if (this.table_areas == null || this.table_areas.Count == 0)
             {
-                var hor_text = this.horizontal_text;
+                var hor_text = this.HorizontalText;
                 if (this.table_regions?.Count > 0)
                 {
                     // filter horizontal text
                     hor_text = new List<TextLine>();
                     foreach (var region in this.table_regions)
                     {
-                        var region_text = Utils.TextInBbox(region, this.horizontal_text);
+                        var region_text = Utils.TextInBbox(region, this.HorizontalText);
                         hor_text.AddRange(region_text);
                     }
                 }
@@ -345,11 +345,11 @@ namespace Camelot.Parsers
             {
                 {
                     "horizontal",
-                    Utils.TextInBbox(tk, this.horizontal_text).OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList()
+                    Utils.TextInBbox(tk, this.HorizontalText).OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList()
                 },
                 {
                     "vertical",
-                    Utils.TextInBbox(tk, this.vertical_text).OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList()
+                    Utils.TextInBbox(tk, this.VerticalText).OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList()
                 }
             };
 
@@ -482,8 +482,8 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float, float, float, float)>();
-            _text.AddRange(this.horizontal_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
-            _text.AddRange(this.vertical_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table._text = _text;
             table.segments = (null, null);
             table.textedges = this.textedges;
@@ -491,18 +491,18 @@ namespace Camelot.Parsers
             return table;
         }
 
-        public override List<Table> extract_tables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
+        public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
-            this._generate_layout(filename, layout_kwargs);
-            var base_filename = Path.GetFileName(this.rootname); //os.path.basename(self.rootname)
+            this.GenerateLayout(filename, layout_kwargs);
+            var base_filename = Path.GetFileName(this.RootName); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
                 log?.Debug($"Processing {base_filename}");
             }
 
-            if (this.horizontal_text == null || this.horizontal_text.Count == 0)
+            if (this.HorizontalText == null || this.HorizontalText.Count == 0)
             {
-                if (this.images?.Count > 0)
+                if (this.Images?.Count > 0)
                 {
                     log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
                 }

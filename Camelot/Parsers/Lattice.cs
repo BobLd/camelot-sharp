@@ -301,7 +301,7 @@ namespace Camelot.Parsers
         public void _generate_table_bbox()
         {
             (this.table_bbox, this.vertical_segments, this.horizontal_segments) = imageProcesser.Process(
-                this.layout,
+                this.Layout,
                 this.drawingProcessor,
                 this.process_background,
                 this.threshold_blocksize,
@@ -317,8 +317,8 @@ namespace Camelot.Parsers
             // select elements which lie within table_bbox
             Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>();
             (var v_s, var h_s) = Utils.SegmentsInBbox(tk, this.vertical_segments, this.horizontal_segments);
-            t_bbox["horizontal"] = Utils.TextInBbox(tk, this.horizontal_text);
-            t_bbox["vertical"] = Utils.TextInBbox(tk, this.vertical_text);
+            t_bbox["horizontal"] = Utils.TextInBbox(tk, this.HorizontalText);
+            t_bbox["vertical"] = Utils.TextInBbox(tk, this.VerticalText);
 
             t_bbox["horizontal"] = t_bbox["horizontal"].OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList();
             t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList();
@@ -348,7 +348,7 @@ namespace Camelot.Parsers
         {
             if (v_s == null || h_s == null)
             {
-                throw new ArgumentNullException($"No segments found on {this.rootname}");
+                throw new ArgumentNullException($"No segments found on {this.RootName}");
             }
 
             var table = new Table(cols, rows);
@@ -411,8 +411,8 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float x0, float y0, float x1, float y1)>();
-            _text.AddRange(this.horizontal_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
-            _text.AddRange(this.vertical_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table._text = _text;
             table.segments = (this.vertical_segments, this.horizontal_segments);
             table.textedges = null;
@@ -420,18 +420,18 @@ namespace Camelot.Parsers
             return table;
         }
 
-        public override List<Table> extract_tables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
+        public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
-            base._generate_layout(filename, layout_kwargs);
-            var base_filename = Path.GetFileName(this.rootname); //os.path.basename(self.rootname)
+            base.GenerateLayout(filename, layout_kwargs);
+            var base_filename = Path.GetFileName(this.RootName); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
                 log?.Debug($"Processing {base_filename}");
             }
 
-            if (base.horizontal_text == null || base.horizontal_text.Count == 0)
+            if (base.HorizontalText == null || base.HorizontalText.Count == 0)
             {
-                if (base.images.Count > 0)
+                if (base.Images.Count > 0)
                 {
                     log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
                 }

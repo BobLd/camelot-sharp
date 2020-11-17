@@ -433,13 +433,13 @@ namespace Camelot.Tests
         public void extract_tables()
         {
             Stream stream = new Stream();
-            var tables = stream.extract_tables(@"Files\foo.pdf");
+            var tables = stream.ExtractTables(@"Files\foo.pdf");
 
             Assert.Single(tables);
-            Assert.Equal((612, 792), stream.dimensions);
-            Assert.Equal(612, stream.pdf_width);
-            Assert.Equal(792, stream.pdf_height);
-            Assert.Equal(84, stream.horizontal_text.Count);
+            Assert.Equal((612, 792), stream.Dimensions);
+            Assert.Equal(612, stream.PdfWidth);
+            Assert.Equal(792, stream.PdfHeight);
+            Assert.Equal(84, stream.HorizontalText.Count);
         }
     }
 }
