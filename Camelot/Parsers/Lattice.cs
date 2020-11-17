@@ -19,94 +19,94 @@ namespace Camelot.Parsers
         /// <summary>
         /// List of page regions that may contain tables of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in PDF coordinate space.
         /// </summary>
-        public List<(float x1, float y1, float x2, float y2)> table_regions { get; }
+        public List<(float x1, float y1, float x2, float y2)> TableRegions { get; }
 
         /// <summary>
         /// List of table area strings of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in PDF coordinate space.
         /// </summary>
-        public List<(float x1, float y1, float x2, float y2)> table_areas { get; }
+        public List<(float x1, float y1, float x2, float y2)> TableAreas { get; }
 
         /// <summary>
         /// Process background lines.
         /// </summary>
-        public bool process_background { get; }
+        public bool ProcessBackground { get; }
 
         /// <summary>
         /// Line size scaling factor. The larger the value the smaller the detected lines. Making it very large will lead to text being detected as lines.
         /// </summary>
-        public int line_scale { get; }
+        public int LineScale { get; }
 
         /// <summary>
         /// Direction in which text in a spanning cell will be copied over.
         /// <para>{'h', 'v'}</para>
         /// </summary>
-        public List<string> copy_text { get; }
+        public List<string> CopyText { get; }
 
         /// <summary>
         /// Direction in which text in a spanning cell will flow.
         /// <para>{'l', 'r', 't', 'b'}</para>
         /// </summary>
-        public string[] shift_text { get; }
+        public string[] ShiftText { get; }
 
         /// <summary>
         /// Split text that spans across multiple cells.
         /// </summary>
-        public bool split_text { get; }
+        public bool SplitText { get; }
 
         /// <summary>
         /// Flag text based on font size. Useful to detect super/subscripts. Adds &lt;s&gt;&lt;/s&gt; around flagged text.
         /// </summary>
-        public bool flag_size { get; }
+        public bool FlagSize { get; }
 
         /// <summary>
         /// Characters that should be stripped from a string before assigning it to a cell.
         /// </summary>
-        public string strip_text { get; }
+        public string StripText { get; }
 
         /// <summary>
         /// Tolerance parameter used to merge close vertical and horizontal lines.
         /// </summary>
-        public int line_tol { get; }
+        public int LineTol { get; }
 
         /// <summary>
         /// Tolerance parameter used to decide whether the detected lines and points lie close to each other.
         /// </summary>
-        public int joint_tol { get; }
+        public int JointTol { get; }
 
         /// <summary>
         /// Size of a pixel neighborhood that is used to calculate a threshold value for the pixel: 3, 5, 7, and so on.
         /// </summary>
-        public int threshold_blocksize { get; }
+        public int ThresholdBlocksize { get; }
 
         /// <summary>
         /// Constant subtracted from the mean or weighted mean. Normally, it is positive but may be zero or negative as well.
         /// </summary>
-        public int threshold_constant { get; }
+        public int ThresholdConstant { get; }
 
         /// <summary>
         /// Number of times for erosion/dilation is applied.
         /// </summary>
-        public int iterations { get; }
+        public int Iterations { get; }
 
         /// <summary>
         /// Resolution used for PDF to PNG conversion.
         /// </summary>
-        public int resolution { get; }
+        public int Resolution { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public IImageProcesser imageProcesser { get; }
+        public IImageProcesser ImageProcesser { get; }
 
         /// <summary>
         /// 
         /// </summary>
-        public IDrawingProcessor drawingProcessor { get; }
+        public IDrawingProcessor DrawingProcessor { get; }
 
-        Dictionary<string, List<TextLine>> t_bbox;
-        List<(float, float, float, float)> vertical_segments;
-        List<(float, float, float, float)> horizontal_segments;
-        Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
+        private Dictionary<string, List<TextLine>> tBbox;
+        private List<(float, float, float, float)> verticalSegments;
+        private List<(float, float, float, float)> horizontalSegments;
+        private Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> tableBbox;
 
         /// <summary>
         /// Lattice method of parsing looks for lines between text to parse the table.
@@ -153,24 +153,24 @@ namespace Camelot.Parsers
                        ILog log = null,
                        params string[] kwargs) : base(log)
         {
-            this.imageProcesser = imageProcesser;
-            this.drawingProcessor = drawingProcessor;
+            this.ImageProcesser = imageProcesser;
+            this.DrawingProcessor = drawingProcessor;
 
-            this.table_regions = table_regions;
-            this.table_areas = table_areas;
-            this.process_background = process_background;
-            this.line_scale = line_scale;
-            this.copy_text = copy_text;
-            this.shift_text = shift_text == null ? new[] { "l", "t" } : shift_text;
-            this.split_text = split_text;
-            this.flag_size = flag_size;
-            this.strip_text = strip_text;
-            this.line_tol = line_tol;
-            this.joint_tol = joint_tol;
-            this.threshold_blocksize = threshold_blocksize;
-            this.threshold_constant = threshold_constant;
-            this.iterations = iterations;
-            this.resolution = resolution;
+            this.TableRegions = table_regions;
+            this.TableAreas = table_areas;
+            this.ProcessBackground = process_background;
+            this.LineScale = line_scale;
+            this.CopyText = copy_text;
+            this.ShiftText = shift_text == null ? new[] { "l", "t" } : shift_text;
+            this.SplitText = split_text;
+            this.FlagSize = flag_size;
+            this.StripText = strip_text;
+            this.LineTol = line_tol;
+            this.JointTol = joint_tol;
+            this.ThresholdBlocksize = threshold_blocksize;
+            this.ThresholdConstant = threshold_constant;
+            this.Iterations = iterations;
+            this.Resolution = resolution;
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Camelot.Parsers
         /// <param name="shift_text">list - {'l', 'r', 't', 'b'}
         /// Select one or more strings from above and pass them as a list to specify where the text in a spanning cell should flow.</param>
         /// <returns>List of tuples of the form (r_idx, c_idx, text) where r_idx and c_idx are new row and column indices for text.</returns>
-        public static List<(int r_idx, int c_idx, string text)> _reduce_index(Table t, List<(int r_idx, int c_idx, string text)> idx, string[] shift_text)
+        private static List<(int r_idx, int c_idx, string text)> ReduceIndex(Table t, List<(int r_idx, int c_idx, string text)> idx, string[] shift_text)
         {
             List<(int r_idx, int c_idx, string text)> indices = new List<(int r_idx, int c_idx, string text)>();
 
@@ -257,7 +257,7 @@ namespace Camelot.Parsers
         /// to specify the direction in which text should be copied over
         /// when a cell spans multiple rows or columns.</param>
         /// <returns>camelot.core.Table</returns>
-        public static Table _copy_spanning_text(Table t, List<string> copy_text = null)
+        private static Table CopySpanningText(Table t, List<string> copy_text = null)
         {
             foreach (var f in copy_text)
             {
@@ -298,41 +298,41 @@ namespace Camelot.Parsers
             return t;
         }
 
-        public void _generate_table_bbox()
+        private void GenerateTableBbox()
         {
-            (this.table_bbox, this.vertical_segments, this.horizontal_segments) = imageProcesser.Process(
+            (this.tableBbox, this.verticalSegments, this.horizontalSegments) = ImageProcesser.Process(
                 this.Layout,
-                this.drawingProcessor,
-                this.process_background,
-                this.threshold_blocksize,
-                this.threshold_constant,
-                this.line_scale,
-                this.iterations,
-                this.table_areas,
-                this.table_regions);
+                this.DrawingProcessor,
+                this.ProcessBackground,
+                this.ThresholdBlocksize,
+                this.ThresholdConstant,
+                this.LineScale,
+                this.Iterations,
+                this.TableAreas,
+                this.TableRegions);
         }
 
-        public (List<(float, float)> cols, List<(float, float)> rows, List<(float, float, float, float)> v_s, List<(float, float, float, float)> h_s) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
+        public (List<(float, float)> cols, List<(float, float)> rows, List<(float, float, float, float)> v_s, List<(float, float, float, float)> h_s) GenerateColumnsAndRows(int table_idx, (float, float, float, float) tk)
         {
             // select elements which lie within table_bbox
             Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>();
-            (var v_s, var h_s) = Utils.SegmentsInBbox(tk, this.vertical_segments, this.horizontal_segments);
+            (var v_s, var h_s) = Utils.SegmentsInBbox(tk, this.verticalSegments, this.horizontalSegments);
             t_bbox["horizontal"] = Utils.TextInBbox(tk, this.HorizontalText);
             t_bbox["vertical"] = Utils.TextInBbox(tk, this.VerticalText);
 
             t_bbox["horizontal"] = t_bbox["horizontal"].OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList();
             t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList();
 
-            this.t_bbox = t_bbox;
-            var cols = this.table_bbox[tk].Select(x => (float)x.Item1).ToList();
-            var rows = this.table_bbox[tk].Select(x => (float)x.Item2).ToList();
+            this.tBbox = t_bbox;
+            var cols = this.tableBbox[tk].Select(x => (float)x.Item1).ToList();
+            var rows = this.tableBbox[tk].Select(x => (float)x.Item2).ToList();
 
             cols.AddRange(new[] { tk.Item1, tk.Item3 });
             rows.AddRange(new[] { tk.Item2, tk.Item4 });
 
             // sort horizontal and vertical segments
-            cols = Utils.MergeCloseLines(cols.OrderBy(r => r), line_tol: this.line_tol);
-            rows = Utils.MergeCloseLines(rows.OrderByDescending(c => c), line_tol: this.line_tol);
+            cols = Utils.MergeCloseLines(cols.OrderBy(r => r), line_tol: this.LineTol);
+            rows = Utils.MergeCloseLines(rows.OrderByDescending(c => c), line_tol: this.LineTol);
 
             // make grid using x and y coord of shortlisted rows and cols
             var colsT = Enumerable.Range(0, cols.Count - 1).Select(i => (cols[i], cols[i + 1])).ToList();
@@ -343,7 +343,7 @@ namespace Camelot.Parsers
         /// <summary>
         /// TODO: BobLD - have a single function for stream and lattice
         /// </summary>
-        public Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows,
+        public Table GenerateTable(int table_idx, List<(float, float)> cols, List<(float, float)> rows,
             List<(float, float, float, float)> v_s = null, List<(float, float, float, float)> h_s = null)
         {
             if (v_s == null || h_s == null)
@@ -353,7 +353,7 @@ namespace Camelot.Parsers
 
             var table = new Table(cols, rows);
             // set table edges to True using ver+hor lines
-            table = table.SetEdges(v_s, h_s, joint_tol: this.joint_tol);
+            table = table.SetEdges(v_s, h_s, joint_tol: this.JointTol);
             // set table border edges to True
             table = table.SetBorder();
             // set spanning cells to True
@@ -365,14 +365,14 @@ namespace Camelot.Parsers
 
             foreach (string direction in new[] { "vertical", "horizontal" })
             {
-                foreach (var t in this.t_bbox[direction])
+                foreach (var t in this.tBbox[direction])
                 {
                     (var indices, var error) = Utils.GetTableIndex(table,
                         t,
                         direction,
-                        split_text: this.split_text,
-                        flag_size: this.flag_size,
-                        strip_text: this.strip_text,
+                        split_text: this.SplitText,
+                        flag_size: this.FlagSize,
+                        strip_text: this.StripText,
                         log: log);
 
                     // CAREFUL HERE - Not sure the Python version is correct
@@ -383,7 +383,7 @@ namespace Camelot.Parsers
                     if (indices[0].r_idx != -1 && indices[0].c_idx != -1) // if indices[:2] != (-1, -1):
                     {
                         pos_errors.Add(error);
-                        indices = Lattice._reduce_index(table, indices, shift_text: this.shift_text);
+                        indices = Lattice.ReduceIndex(table, indices, shift_text: this.ShiftText);
                         foreach ((var r_idx, var c_idx, var text) in indices)
                         {
                             table.Cells[r_idx][c_idx].Text = text + "\n";
@@ -393,9 +393,9 @@ namespace Camelot.Parsers
             }
             var accuracy = Utils.ComputeAccuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) });
 
-            if (this.copy_text != null)
+            if (this.CopyText != null)
             {
-                table = _copy_spanning_text(table, copy_text: this.copy_text);
+                table = CopySpanningText(table, copy_text: this.CopyText);
             }
 
             var data = table.Data();
@@ -414,7 +414,7 @@ namespace Camelot.Parsers
             _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table._text = _text;
-            table.segments = (this.vertical_segments, this.horizontal_segments);
+            table.segments = (this.verticalSegments, this.horizontalSegments);
             table.textedges = null;
 
             return table;
@@ -442,15 +442,15 @@ namespace Camelot.Parsers
                 return null;
             }
 
-            this._generate_table_bbox();
+            this.GenerateTableBbox();
 
             var _tables = new List<Table>();
             // sort tables based on y-coord
             int table_idx = 0;
-            foreach (var tk in this.table_bbox.Keys.OrderByDescending(kvp => kvp.Item2))
+            foreach (var tk in this.tableBbox.Keys.OrderByDescending(kvp => kvp.Item2))
             {
-                (var cols, var rows, var v_s, var h_s) = this._generate_columns_and_rows(table_idx, tk);
-                var table = this._generate_table(table_idx, cols, rows, v_s: v_s, h_s: h_s);
+                (var cols, var rows, var v_s, var h_s) = this.GenerateColumnsAndRows(table_idx, tk);
+                var table = this.GenerateTable(table_idx, cols, rows, v_s: v_s, h_s: h_s);
                 table._bbox = tk;
                 _tables.Add(table);
                 table_idx++;
