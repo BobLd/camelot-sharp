@@ -7,6 +7,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig).</Description>
     <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export</PackageTags>
+    <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/BobLd/camelot-sharp</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>

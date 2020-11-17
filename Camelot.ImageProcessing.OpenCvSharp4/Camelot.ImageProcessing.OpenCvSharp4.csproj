@@ -7,6 +7,8 @@
     <Authors>BobLd</Authors>
     <Version>0.0.1-alpha001</Version>
     <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig). Contains OpenCvSharp4 for image processing used in the Lattice parser.</Description>
+    <PackageProjectUrl>https://github.com/BobLd/camelot-sharp</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
