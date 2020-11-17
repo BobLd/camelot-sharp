@@ -15,7 +15,7 @@ namespace Camelot.ImageProcessing
             var scaled_areas = new List<(int, int, int, int)>();
             foreach (var area in areas)
             {
-                (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf(area, img_scalers);
+                (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.ScalePdf(area, img_scalers);
                 scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
             }
             return scaled_areas;
@@ -122,7 +122,7 @@ namespace Camelot.ImageProcessing
 
                 //table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
 
-                return Utils.scale_image(
+                return Utils.ScaleImage(
                     table_bbox,
                     vertical_segments,
                     horizontal_segments,

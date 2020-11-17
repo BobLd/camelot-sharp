@@ -316,9 +316,9 @@ namespace Camelot.Parsers
         {
             // select elements which lie within table_bbox
             Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>();
-            (var v_s, var h_s) = Utils.segments_in_bbox(tk, this.vertical_segments, this.horizontal_segments);
-            t_bbox["horizontal"] = Utils.text_in_bbox(tk, this.horizontal_text);
-            t_bbox["vertical"] = Utils.text_in_bbox(tk, this.vertical_text);
+            (var v_s, var h_s) = Utils.SegmentsInBbox(tk, this.vertical_segments, this.horizontal_segments);
+            t_bbox["horizontal"] = Utils.TextInBbox(tk, this.horizontal_text);
+            t_bbox["vertical"] = Utils.TextInBbox(tk, this.vertical_text);
 
             t_bbox["horizontal"] = t_bbox["horizontal"].OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList();
             t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.x0()).ThenBy(x => -x.y0()).ToList();
@@ -331,8 +331,8 @@ namespace Camelot.Parsers
             rows.AddRange(new[] { tk.Item2, tk.Item4 });
 
             // sort horizontal and vertical segments
-            cols = Utils.merge_close_lines(cols.OrderBy(r => r), line_tol: this.line_tol);
-            rows = Utils.merge_close_lines(rows.OrderByDescending(c => c), line_tol: this.line_tol);
+            cols = Utils.MergeCloseLines(cols.OrderBy(r => r), line_tol: this.line_tol);
+            rows = Utils.MergeCloseLines(rows.OrderByDescending(c => c), line_tol: this.line_tol);
 
             // make grid using x and y coord of shortlisted rows and cols
             var colsT = Enumerable.Range(0, cols.Count - 1).Select(i => (cols[i], cols[i + 1])).ToList();
@@ -367,7 +367,7 @@ namespace Camelot.Parsers
             {
                 foreach (var t in this.t_bbox[direction])
                 {
-                    (var indices, var error) = Utils.get_table_index(table,
+                    (var indices, var error) = Utils.GetTableIndex(table,
                         t,
                         direction,
                         split_text: this.split_text,
@@ -391,7 +391,7 @@ namespace Camelot.Parsers
                     }
                 }
             }
-            var accuracy = Utils.compute_accuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) });
+            var accuracy = Utils.ComputeAccuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) });
 
             if (this.copy_text != null)
             {
@@ -402,7 +402,7 @@ namespace Camelot.Parsers
             //table.df = pd.DataFrame(data);
             table.Shape = (data.Count, data.Max(r => r.Count));
 
-            var whitespace = Utils.compute_whitespace(data);
+            var whitespace = Utils.ComputeWhitespace(data);
             table.Flavor = "lattice";
             table.Accuracy = accuracy;
             table.Whitespace = whitespace;

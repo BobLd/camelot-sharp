@@ -320,7 +320,7 @@ namespace Camelot.Parsers
                     hor_text = new List<TextLine>();
                     foreach (var region in this.table_regions)
                     {
-                        var region_text = Utils.text_in_bbox(region, this.horizontal_text);
+                        var region_text = Utils.TextInBbox(region, this.horizontal_text);
                         hor_text.AddRange(region_text);
                     }
                 }
@@ -345,11 +345,11 @@ namespace Camelot.Parsers
             {
                 {
                     "horizontal",
-                    Utils.text_in_bbox(tk, this.horizontal_text).OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList()
+                    Utils.TextInBbox(tk, this.horizontal_text).OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList()
                 },
                 {
                     "vertical",
-                    Utils.text_in_bbox(tk, this.vertical_text).OrderBy(x => x.x0()).ThenBy(x => -x.y0()).ToList()
+                    Utils.TextInBbox(tk, this.vertical_text).OrderBy(x => x.x0()).ThenBy(x => -x.y0()).ToList()
                 }
             };
 
@@ -438,7 +438,7 @@ namespace Camelot.Parsers
             {
                 foreach (var t in this.t_bbox[direction])
                 {
-                    (var indices, var error) = Utils.get_table_index(
+                    (var indices, var error) = Utils.GetTableIndex(
                         table,
                         t,
                         direction,
@@ -467,13 +467,13 @@ namespace Camelot.Parsers
                     }
                 }
             }
-            var accuracy = Utils.compute_accuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) }); //[[100, pos_errors]]);
+            var accuracy = Utils.ComputeAccuracy(new[] { (100f, (IReadOnlyList<float>)pos_errors) }); //[[100, pos_errors]]);
 
             var data = table.Data();
             //table.df = pd.DataFrame(data)
             table.Shape = (data.Count, data.Max(r => r.Count)); //table.df.shape;
 
-            var whitespace = Utils.compute_whitespace(data);
+            var whitespace = Utils.ComputeWhitespace(data);
             table.Flavor = "stream";
             table.Accuracy = accuracy;
             table.Whitespace = whitespace;
