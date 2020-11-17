@@ -215,13 +215,13 @@ namespace Camelot.ImageProcessing
 
                 if (regions?.Count > 0)
                 {
-                    var region_mask = (Mat)Mat.Zeros(threshold_local.Rows, threshold_local.Cols, threshold_local.Type()); //np.zeros(threshold.shape)
+                    var region_mask = (Mat)Mat.Zeros(threshold_local.Rows, threshold_local.Cols, threshold_local.Type());
                     foreach (var region in regions)
                     {
                         (int x, int y, int w, int h) = region;
                         var part = region_mask.SubMat(y, y + h, x, x + w);
                         part.SetTo(1);
-                        Cv2.Multiply(threshold_local, region_mask, threshold_local); //threshold = np.multiply(threshold, region_mask)
+                        Cv2.Multiply(threshold_local, region_mask, threshold_local);
                     }
                 }
 
@@ -298,13 +298,13 @@ namespace Camelot.ImageProcessing
         {
             using (Mat joints = new Mat())
             {
-                Cv2.Multiply(vertical, horizontal, joints); // joints = np.multiply(vertical, horizontal)
+                Cv2.Multiply(vertical, horizontal, joints);
                 var tables = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>();
 
                 foreach (var c in contours)
                 {
                     (int x, int y, int w, int h) = c;
-                    var roi = joints.SubMat(y, y + h, x, x + w); // roi = joints[y: y + h, x: x + w]
+                    var roi = joints.SubMat(y, y + h, x, x + w);
                     Debug.Assert(roi.Channels() == 1);
                     Cv2.FindContours(roi, out Point[][] jc, out _, RetrievalModes.CComp, ContourApproximationModes.ApproxSimple);
 
@@ -318,8 +318,8 @@ namespace Camelot.ImageProcessing
                     foreach (var j in jc)
                     {
                         (int jx, int jy, int jw, int jh) = Cv2.BoundingRect(j).ToTuple();
-                        int c1 = x + (2 * jx + jw).FloorDiv(2); // 2;
-                        int c2 = y + (2 * jy + jh).FloorDiv(2); // 2;
+                        int c1 = x + (2 * jx + jw).FloorDiv(2);
+                        int c2 = y + (2 * jy + jh).FloorDiv(2);
                         joint_coords.Add((c1, c2));
                     }
 
