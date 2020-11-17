@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using static Camelot.Core;
 
@@ -297,11 +296,26 @@ namespace Camelot.Parsers
         byte[] image;
         byte[] threshold;
 
-        Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>> table_bbox_unscaled;
+        Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled;
         List<(float, float, float, float)> vertical_segments;
         List<(float, float, float, float)> horizontal_segments;
 
         public void _generate_table_bbox()
+        {
+            (this.table_bbox, this.vertical_segments, this.horizontal_segments) = imageProcesser.Process(
+                this.layout,
+                this.drawingProcessor,
+                this.process_background,
+                this.threshold_blocksize,
+                this.threshold_constant,
+                this.line_scale,
+                this.iterations,
+                this.table_areas,
+                this.table_regions,
+                out this.table_bbox_unscaled);
+        }
+
+        public void _generate_table_bbox_old()
         {
             List<(int, int, int, int)> scale_areas(List<string> areas, (float, float, float) img_scalers)
             {
@@ -309,12 +323,12 @@ namespace Camelot.Parsers
                 foreach (var area in areas)
                 {
                     var coords = area.Split(',');
-                    int x1 = int.Parse(coords[0]); //float(x1);
-                    int y1 = int.Parse(coords[1]); //float(y1);
-                    int x2 = int.Parse(coords[2]); //float(x2);
-                    int y2 = int.Parse(coords[3]); //float(y2);
-                    (x1, y1, x2, y2) = Utils.scale_pdf((x1, y1, x2, y2), img_scalers);
-                    scaled_areas.Add((x1, y1, Math.Abs(x2 - x1), Math.Abs(y2 - y1)));
+                    float x1 = float.Parse(coords[0]); //float(x1);
+                    float y1 = float.Parse(coords[1]); //float(y1);
+                    float x2 = float.Parse(coords[2]); //float(x2);
+                    float y2 = float.Parse(coords[3]); //float(y2);
+                    (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf((x1, y1, x2, y2), img_scalers);
+                    scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
                 }
                 return scaled_areas;
             }
@@ -325,8 +339,6 @@ namespace Camelot.Parsers
                 blocksize: this.threshold_blocksize,
                 c: this.threshold_constant);
 
-            //var image_width = this.image.shape[1];
-            //var image_height = this.image.shape[0];
             (int image_width, int image_height, int _) = imageProcesser.GetImageShape(this.image);
             var image_width_scaler = image_width / (float)this.pdf_width;
             var image_height_scaler = image_height / (float)this.pdf_height;
@@ -380,7 +392,7 @@ namespace Camelot.Parsers
                 table_bbox = imageProcesser.find_joints(areas, vertical_mask, horizontal_mask);
             }
 
-            this.table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>>(table_bbox); // copy.deepcopy(table_bbox);
+            this.table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
 
             (this.table_bbox, this.vertical_segments, this.horizontal_segments) = Utils.scale_image(
                 table_bbox,
@@ -503,7 +515,7 @@ namespace Camelot.Parsers
             return table;
         }
 
-        Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>> table_bbox;
+        Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
 
         public override List<Table> extract_tables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {

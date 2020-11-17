@@ -12,7 +12,6 @@ namespace Camelot.ImageProcessing
         /// </summary>
         /// <param name="page"></param>
         /// <param name="scale"></param>
-        [Obsolete("Will be made available in PdfPig.")]
         MemoryStream DrawPage(Page page, double scale);
     }
 }

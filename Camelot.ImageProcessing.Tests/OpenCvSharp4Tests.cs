@@ -4,6 +4,8 @@ using OpenCvSharp.Extensions;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using UglyToad.PdfPig;
 using Xunit;
 
 namespace Camelot.ImageProcessing.Tests
@@ -30,12 +32,12 @@ namespace Camelot.ImageProcessing.Tests
             Directory.CreateDirectory(@"Files\Output\");
         }
 
-        OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
-
         [Fact]
         public void adaptive_threshold()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
+
+            OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             (var img, var threshold) = _imageProcessing.adaptive_threshold(imagePath, false);
             Assert.Equal(new int[] { 794, 596, 3 }, shape(img));
@@ -73,6 +75,7 @@ namespace Camelot.ImageProcessing.Tests
         public void find_lines()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
+            OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             // horizontal
             (var _, var threshold) = _imageProcessing.adaptive_threshold(imagePath, false);
@@ -185,6 +188,8 @@ namespace Camelot.ImageProcessing.Tests
         public void find_contours()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
+            OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
+
             (var _, var threshold) = _imageProcessing.adaptive_threshold(imagePath, false);
             (var vertical_mask, var vertical_segments) = _imageProcessing.find_lines(threshold, direction: "vertical");
             (var horizontal_mask, var horizontal_segments) = _imageProcessing.find_lines(threshold); //, direction: "horizontal");
@@ -232,6 +237,8 @@ namespace Camelot.ImageProcessing.Tests
         public void find_joints()
         {
             string imagePath = @"Files\PMC5055614_00002.jpg";
+            OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
+
             (var _, var threshold) = _imageProcessing.adaptive_threshold(imagePath, true);
             (var vertical_mask, var vertical_segments) = _imageProcessing.find_lines(threshold, direction: "vertical");
             (var horizontal_mask, var horizontal_segments) = _imageProcessing.find_lines(threshold, direction: "horizontal");
@@ -239,11 +246,11 @@ namespace Camelot.ImageProcessing.Tests
             var contours = _imageProcessing.find_contours(vertical_mask, horizontal_mask);
             var table_bbox = _imageProcessing.find_joints(contours, vertical_mask, horizontal_mask);
 
-            var expected = new Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>>()
+            var expected = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>()
             {
                 {
                     (53, 734, 290, 415),
-                    new List<(int, int)>()
+                    new List<(float, float)>()
                     {
                         (55, 732),
                         (55, 721),
@@ -307,7 +314,7 @@ namespace Camelot.ImageProcessing.Tests
                 },
                 {
                     (306, 672, 541, 540),
-                    new List<(int, int)>()
+                    new List<(float, float)>()
                     {
                         (309, 670),
                         (309, 658),
@@ -354,7 +361,7 @@ namespace Camelot.ImageProcessing.Tests
                 },
                 {
                     (308, 538, 544, 416),
-                    new List<(int, int)>()
+                    new List<(float, float)>()
                     {
                         (309, 535),
                         (309, 524),
@@ -380,6 +387,54 @@ namespace Camelot.ImageProcessing.Tests
 
             Assert.Equal(expected.Count, table_bbox.Count);
             Assert.Equal(expected, table_bbox);
+        }
+
+        [Fact]
+        public void Process()
+        {
+            OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
+
+            using (var document = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+            {
+                var page = document.GetPage(1);
+
+                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new BasicSystemDrawingProcessor(), false, 15, -2, 15, 0, null, null, out var table_bbox_unscaled);
+
+                Assert.Single(table_bbox);
+                Assert.Equal(new[] { (120.0f, 116.66666666666666f, 492.0f, 234.33333333333331f) }.ToList(), table_bbox.Keys.ToList(), new TestHelper.ListTuple4EqualityComparer(0));
+                Assert.Equal(52, table_bbox.Values.First().Count()); // should be 57, difference comes from rendering
+
+                var vertical_segments_expected = new List<(float, float, float, float)>()
+                {
+                    (430.0f, 116.66666666666666f, 430.0f, 218.33333333333331f),
+                    (374.66666666666663f,  116.66666666666666f,  374.66666666666663f,  218.33333333333331f),
+                    (313.3333333333333f,  116.66666666666666f,  313.3333333333333f,  218.33333333333331f),
+                    (491.3333333333333f, 116.66666666666666f, 491.3333333333333f, 234.0f),
+                    (257.3333333333333f, 116.66666666666666f, 257.3333333333333f, 234.0f),
+                    (205.0f, 116.66666666666666f, 205.0f, 234.0f),
+                    (164.66666666666666f, 116.66666666666666f, 164.66666666666666f, 234.0f),
+                    (120.33333333333333f, 116.66666666666666f, 120.33333333333333f, 234.0f)
+                };
+                Assert.Equal(vertical_segments_expected.Count, vertical_segments.Count);
+                Assert.Equal(vertical_segments_expected, vertical_segments, new TestHelper.ListTuple4EqualityComparer(1));
+
+                var horizontal_segments_expected = new List<(float, float, float, float)>()
+                {
+                    (120.33333333333333f, 117.33333333333333f, 492.0f, 117.33333333333333f),
+                    (120.66f, 133.0f, 492.0f, 133.0f),                               // (120.3333333333333f, 133.0f, 492.0f, 133.0f),
+                    (120.66f, 148.33333333333331f, 492.0f, 148.33333333333331f),    // (120.33333333333333f, 148.33333333333331f, 492.0f, 148.33333333333331f),
+                    (120.66f, 164.0f, 492.0f, 164.0f),                              // (120.33333333333333f, 164.0f, 492.0f, 164.0f),
+                    (120.66f, 179.33333333333331f, 492.0f, 179.33333333333331f),    // (120.33333333333333f, 179.33333333333331f, 492.0f, 179.33333333333331f),
+                    (120.66f, 195.0f, 492.0f, 195.0f),                              // (120.33333333333333f, 195.0f, 492.0f, 195.0f),
+                    (257.66666666666663f, 218.33333333333331f, 492.0f, 218.33333333333331f),
+                    (120.33333333333333f, 234.0f, 492.0f, 234.0f)                               // (120.33333333333333f, 234.0f, 492.0f, 234.0f)
+                };
+                Assert.Equal(horizontal_segments_expected.Count, horizontal_segments.Count);
+                Assert.Equal(horizontal_segments_expected, horizontal_segments, new TestHelper.ListTuple4EqualityComparer(1));
+
+                Assert.Single(table_bbox_unscaled);
+                Assert.Equal(52, table_bbox_unscaled.Values.First().Count()); // should be 57, difference comes from rendering
+            }
         }
     }
 }

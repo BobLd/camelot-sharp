@@ -17,4 +17,22 @@
     <ProjectReference Include="..\Camelot.ImageProcessing.OpenCvSharp4\Camelot.ImageProcessing.OpenCvSharp4.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Files\foo.pdf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\foo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\PMC5055614_00002.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\PMC5055614_00002_threshold_bg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Files\PMC5055614_00002_threshold_nobg.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

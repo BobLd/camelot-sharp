@@ -106,14 +106,14 @@ namespace Camelot
         /// <param name="factors">Tuple (scaling_factor_x, scaling_factor_y, img_y) where the
         /// first two elements are scaling factors and img_y is height of image.</param>
         /// <returns>tables_new : dict, v_segments_new : dict, h_segments_new : dict</returns>
-        public static (Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>> tables_new, List<(float, float, float, float)> v_segments_new, List<(float, float, float, float)> h_segments_new)
-            scale_image(Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>> tables,
+        public static (Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> tables_new, List<(float, float, float, float)> v_segments_new, List<(float, float, float, float)> h_segments_new)
+            scale_image(Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> tables,
             List<(int, int, int, int)> v_segments,
             List<(int, int, int, int)> h_segments,
             (float scaling_factor_x, float scaling_factor_y, float img_y) factors)
         {
             (float scaling_factor_x, float scaling_factor_y, float img_y) = factors;
-            Dictionary<object, object> tables_new = new Dictionary<object, object>();
+            var tables_new = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>();
             foreach (var k in tables.Keys)
             {
                 (float x1, float y1, float x2, float y2) = k;
@@ -122,10 +122,30 @@ namespace Camelot
                 x2 = scale(x2, scaling_factor_x);
                 y2 = scale(Math.Abs(translate(-img_y, y2)), scaling_factor_y);
 
-                throw new NotImplementedException();
+                var j_x = tables[k].Select(x => (float)x.Item1).ToList();
+                var j_y = tables[k].Select(x => (float)x.Item2).ToList();
+                j_x = j_x.Select(j => scale(j, scaling_factor_x)).ToList();
+                j_y = j_y.Select(j => scale(Math.Abs(translate(-img_y, j)), scaling_factor_y)).ToList();
+
+                tables_new[(x1, y1, x2, y2)] = j_x.Zip(j_y, (x, y) => (x, y)).ToList();
             }
 
-            throw new NotImplementedException();
+            List<(float, float, float, float)> v_segments_new = new List<(float, float, float, float)>();
+            foreach (var v in v_segments)
+            {
+                (var x1, var x2) = (scale(v.Item1, scaling_factor_x), scale(v.Item3, scaling_factor_x));
+                (var y1, var y2) = (scale(Math.Abs(translate(-img_y, v.Item2)), scaling_factor_y), scale(Math.Abs(translate(-img_y, v.Item4)), scaling_factor_y));
+                v_segments_new.Add((x1, y1, x2, y2));
+            }
+
+            List<(float, float, float, float)> h_segments_new = new List<(float, float, float, float)>();
+            foreach (var h in h_segments)
+            {
+                (var x1, var x2) = (scale(h.Item1, scaling_factor_x), scale(h.Item3, scaling_factor_x));
+                (var y1, var y2) = (scale(Math.Abs(translate(-img_y, h.Item2)), scaling_factor_y), scale(Math.Abs(translate(-img_y, h.Item4)), scaling_factor_y));
+                h_segments_new.Add((x1, y1, x2, y2));
+            }
+            return (tables_new, v_segments_new, h_segments_new);
         }
 
         /// <summary>

@@ -4,11 +4,116 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using UglyToad.PdfPig.Content;
 
 namespace Camelot.ImageProcessing
 {
     public class OpenCvImageProcesser : IImageProcesser
     {
+        private List<(int, int, int, int)> scale_areas(List<string> areas, (float, float, float) img_scalers)
+        {
+            var scaled_areas = new List<(int, int, int, int)>();
+            foreach (var area in areas)
+            {
+                var coords = area.Split(',');
+                float x1 = float.Parse(coords[0]); //float(x1);
+                float y1 = float.Parse(coords[1]); //float(y1);
+                float x2 = float.Parse(coords[2]); //float(x2);
+                float y2 = float.Parse(coords[3]); //float(y2);
+                (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf((x1, y1, x2, y2), img_scalers);
+                scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
+            }
+            return scaled_areas;
+        }
+
+        public (Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox, List<(float, float, float, float)> vertical_segments, List<(float, float, float, float)> horizontal_segments)
+            Process(Page page, ImageProcessing.IDrawingProcessor drawingProcessor,
+            bool process_background, int threshold_blocksize, int threshold_constant, int line_scale, int iterations,
+            List<string> table_areas, List<string> table_regions, out Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled)
+        {
+            Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
+            Mat vertical_mask;
+            List<(int, int, int, int)> vertical_segments;
+            Mat horizontal_mask;
+
+            List<(int, int, int, int)> horizontal_segments;
+
+            using (var ms = drawingProcessor.DrawPage(page, 3))
+            using (var image = Mat.FromImageData(ms.ToArray()))
+            {
+                (Mat img, Mat threshold) = adaptive_threshold(
+                    image,
+                    process_background: process_background,
+                    blocksize: threshold_blocksize,
+                    c: threshold_constant);
+
+                int[] img_shape = image.shape();
+                (int image_width, int image_height) = (img_shape[1], img_shape[0]);
+                float image_width_scaler = image_width / (float)page.Width; //this.pdf_width;
+                float image_height_scaler = image_height / (float)page.Height; // this.pdf_height;
+                float pdf_width_scaler = (float)page.Width / (float)image_width;
+                float pdf_height_scaler = (float)page.Height / (float)image_height;
+                var image_scalers = (image_width_scaler, image_height_scaler, (float)page.Height);
+                var pdf_scalers = (pdf_width_scaler, pdf_height_scaler, image_height);
+
+                if (table_areas == null || table_areas.Count == 0)
+                {
+                    List<(int, int, int, int)> regions = null;
+                    if (table_regions != null && table_regions.Count > 0)
+                    {
+                        regions = scale_areas(table_regions, image_scalers);
+                    }
+
+                    (vertical_mask, vertical_segments) = find_lines(
+                        threshold,
+                        regions: regions,
+                        direction: "vertical",
+                        line_scale: line_scale,
+                        iterations: iterations);
+
+                    (horizontal_mask, horizontal_segments) = find_lines(
+                        threshold,
+                        regions: regions,
+                        direction: "horizontal",
+                        line_scale: line_scale,
+                        iterations: iterations);
+
+                    var contours = find_contours(vertical_mask, horizontal_mask);
+                    table_bbox = find_joints(contours, vertical_mask, horizontal_mask);
+                }
+                else
+                {
+                    (vertical_mask, vertical_segments) = find_lines(
+                        threshold,
+                        direction: "vertical",
+                        line_scale: line_scale,
+                        iterations: iterations);
+
+                    (horizontal_mask, horizontal_segments) = find_lines(
+                        threshold,
+                        direction: "horizontal",
+                        line_scale: line_scale,
+                        iterations: iterations);
+
+                    var areas = scale_areas(table_areas, image_scalers);
+                    table_bbox = find_joints(areas, vertical_mask, horizontal_mask);
+                }
+
+                vertical_mask.Dispose();
+                horizontal_mask.Dispose();
+                img.Dispose();
+                threshold.Dispose();
+
+                table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
+
+                return Utils.scale_image(
+                    table_bbox,
+                    vertical_segments,
+                    horizontal_segments,
+                    pdf_scalers);
+            }
+        }
+
         /// <summary>
         /// Thresholds an image using OpenCV's adaptiveThreshold.
         /// </summary>
@@ -237,12 +342,12 @@ namespace Camelot.ImageProcessing
         /// <returns>tables : dict - Dict with table boundaries as keys and list of intersections
         /// in that boundary as their value.
         /// Keys are of the form (x1, y1, x2, y2) where (x1, y1) -> lb and (x2, y2) -> rt in image coordinate space.</returns>
-        public Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>> find_joints(List<(int x, int y, int w, int h)> contours, Mat vertical, Mat horizontal)
+        public Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> find_joints(List<(int x, int y, int w, int h)> contours, Mat vertical, Mat horizontal)
         {
             using (Mat joints = new Mat())
             {
                 Cv2.Multiply(vertical, horizontal, joints); // joints = np.multiply(vertical, horizontal)
-                var tables = new Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>>();
+                var tables = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>();
 
                 foreach (var c in contours)
                 {
@@ -257,14 +362,17 @@ namespace Camelot.ImageProcessing
                         continue;
                     }
 
-                    var joint_coords = new List<(int, int)>();
+                    var joint_coords = new List<(float, float)>();
                     foreach (var j in jc)
                     {
-                        (var jx, var jy, var jw, var jh) = Cv2.BoundingRect(j).ToTuple();
-                        var c1 = x + (2 * jx + jw).FloorDiv(2); // 2;
-                        var c2 = y + (2 * jy + jh).FloorDiv(2); // 2;
+                        (int jx, int jy, int jw, int jh) = Cv2.BoundingRect(j).ToTuple();
+                        int c1 = x + (2 * jx + jw).FloorDiv(2); // 2;
+                        int c2 = y + (2 * jy + jh).FloorDiv(2); // 2;
                         joint_coords.Add((c1, c2));
                     }
+
+                    //joint_coords = joint_coords.OrderByDescending(k => k.Item2).ThenByDescending(k => k.Item1).ToList(); // added by bobld
+
                     tables[(x, y + h, x + w, y)] = joint_coords;
                 }
                 return tables;
@@ -282,7 +390,7 @@ namespace Camelot.ImageProcessing
         /// <returns>tables : dict - Dict with table boundaries as keys and list of intersections
         /// in that boundary as their value.
         /// Keys are of the form (x1, y1, x2, y2) where (x1, y1) -> lb and (x2, y2) -> rt in image coordinate space.</returns>
-        public Dictionary<(float x1, float y1, float x2, float y2), List<(int, int)>> find_joints(List<(int x, int y, int w, int h)> contours, byte[] vertical, byte[] horizontal)
+        public Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> find_joints(List<(int x, int y, int w, int h)> contours, byte[] vertical, byte[] horizontal)
         {
             using (Mat verticalMat = Mat.FromImageData(vertical))
             using (Mat horizontalMat = Mat.FromImageData(horizontal))
