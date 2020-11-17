@@ -100,10 +100,10 @@ namespace Camelot.Parsers
         /// <returns>Tuple (x0, y0, x1, y1) in pdf coordinate space.</returns>
         public static (float x0, float y0, float x1, float y1) _text_bbox(Dictionary<string, List<TextLine>> t_bbox)
         {
-            var xmin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.x0())).Min();
-            var ymin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.y0())).Min();
-            var xmax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.x1())).Max();
-            var ymax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.y1())).Max();
+            var xmin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X0())).Min();
+            var ymin = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y0())).Min();
+            var xmax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.X1())).Max();
+            var ymax = t_bbox.SelectMany(dir => dir.Value.Select(t => t.Y1())).Max();
             return (xmin, ymin, xmax, ymax);
         }
 
@@ -127,17 +127,17 @@ namespace Camelot.Parsers
                 // type(obj) is LTChar]):
                 if (!string.IsNullOrEmpty(t.Text?.Trim()))
                 {
-                    if (!MathExtensions.AlmostEquals(row_y, t.y0(), row_tol))
+                    if (!MathExtensions.AlmostEquals(row_y, t.Y0(), row_tol))
                     {
-                        rows.Add(temp.OrderBy(_t => _t.x0()).ToList());
+                        rows.Add(temp.OrderBy(_t => _t.X0()).ToList());
                         temp = new List<TextLine>();
-                        row_y = t.y0();
+                        row_y = t.Y0();
                     }
                     temp.Add(t);
                 }
             }
 
-            rows.Add(temp.OrderBy(t => t.x0()).ToList());
+            rows.Add(temp.OrderBy(t => t.X0()).ToList());
 
             if (rows.Count > 1)
             {
@@ -217,7 +217,7 @@ namespace Camelot.Parsers
         /// <returns>rows : list - List of continuous row y-coordinate tuples.</returns>
         public static List<(float, float)> _join_rows(IReadOnlyList<IReadOnlyList<TextLine>> rows_grouped, float text_y_max, float text_y_min)
         {
-            var row_mids = rows_grouped.Select(r => r.Count > 0 ? r.Sum(t => (t.y0() + t.y1()) / 2f) / r.Count : 0).ToList();
+            var row_mids = rows_grouped.Select(r => r.Count > 0 ? r.Sum(t => (t.Y0() + t.Y1()) / 2f) / r.Count : 0).ToList();
             var rows = Enumerable.Range(1, row_mids.Count - 1).Select(i => (row_mids[i] + row_mids[i - 1]) / 2f).ToList();
             rows.Insert(0, text_y_max);
             rows.Add(text_y_min);
@@ -238,7 +238,7 @@ namespace Camelot.Parsers
             {
                 var new_text = _group_rows(text, row_tol).ToList();
                 var elementsMax = new_text.Max(r => r.Count);
-                var new_cols = new_text.Where(r => r.Count == elementsMax).SelectMany(r => r.Select(t => (t.x0(), t.x1())));
+                var new_cols = new_text.Where(r => r.Count == elementsMax).SelectMany(r => r.Select(t => (t.X0(), t.X1())));
                 cols.AddRange(_merge_columns(new_cols.OrderBy(x => x)));
             }
             return cols;
@@ -283,7 +283,7 @@ namespace Camelot.Parsers
         {
             // TODO: add support for arabic text #141
             // sort textlines in reading order
-            textlines = textlines.OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList();
+            textlines = textlines.OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList();
             var textedges = new TextEdges(this.edge_tol);
             // generate left, middle and right textedges
             textedges.Generate(textlines);
@@ -345,11 +345,11 @@ namespace Camelot.Parsers
             {
                 {
                     "horizontal",
-                    Utils.TextInBbox(tk, this.horizontal_text).OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList()
+                    Utils.TextInBbox(tk, this.horizontal_text).OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList()
                 },
                 {
                     "vertical",
-                    Utils.TextInBbox(tk, this.vertical_text).OrderBy(x => x.x0()).ThenBy(x => -x.y0()).ToList()
+                    Utils.TextInBbox(tk, this.vertical_text).OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList()
                 }
             };
 
@@ -400,7 +400,7 @@ namespace Camelot.Parsers
                         }
                     }
 
-                    cols = rows_grouped.Where(r => r.Count == ncols).SelectMany(r => r.Select(t => (t.x0(), t.x1()))).ToList();
+                    cols = rows_grouped.Where(r => r.Count == ncols).SelectMany(r => r.Select(t => (t.X0(), t.X1()))).ToList();
                     cols = _merge_columns(cols.OrderBy(c => c), column_tol);
 
                     var inner_text = new List<TextLine>();
@@ -408,10 +408,10 @@ namespace Camelot.Parsers
                     {
                         var left = cols[i - 1].Item2;
                         var right = cols[i].Item1;
-                        inner_text.AddRange(this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.x0() > left && t.x1() < right)).ToList());
+                        inner_text.AddRange(this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.X0() > left && t.X1() < right)).ToList());
                     }
 
-                    var outer_text = this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.x0() > cols.Last().Item2 || t.x1() < cols[0].Item1)).ToList();
+                    var outer_text = this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.X0() > cols.Last().Item2 || t.X1() < cols[0].Item1)).ToList();
                     inner_text.AddRange(outer_text);
                     cols = _add_columns(cols, inner_text, this.row_tol);
                     cols = _join_columns(cols, text_x_min, text_x_max);
@@ -482,8 +482,8 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float, float, float, float)>();
-            _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
-            _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
+            _text.AddRange(this.horizontal_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(this.vertical_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table._text = _text;
             table._segments = (null, null);
             table._textedges = this.textedges;

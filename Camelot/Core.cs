@@ -138,8 +138,8 @@ namespace Camelot
             /// <returns>Returns the x coordinate of a text row based on the specified alignment.</returns>
             public static float GetXCoord(TextLine textline, string align)
             {
-                var x_left = textline.x0();
-                var x_right = textline.x1();
+                var x_left = textline.X0();
+                var x_right = textline.X1();
 
 #pragma warning disable IDE0066 // Convert switch statement to expression
                 switch (align)
@@ -185,8 +185,8 @@ namespace Camelot
             public void Add(TextLine textline, string align)
             {
                 var x = GetXCoord(textline, align);
-                float y0 = textline.y0();
-                float y1 = textline.y1();
+                float y0 = textline.Y0();
+                float y1 = textline.Y1();
                 var te = new TextEdge(x, y0, y1, align);
                 this._textedges[align].Add(te);
             }
@@ -207,7 +207,7 @@ namespace Camelot
                     }
                     else
                     {
-                        this._textedges[align][idx.Value].UpdateCoords(x_coord, textline.y0(), this.EdgeTol);
+                        this._textedges[align][idx.Value].UpdateCoords(x_coord, textline.Y0(), this.EdgeTol);
                     }
                 }
             }
@@ -324,12 +324,12 @@ namespace Camelot
                 float sum_textline_height = 0;
                 foreach (var tl in textlines)
                 {
-                    sum_textline_height += tl.y1() - tl.y0();
+                    sum_textline_height += tl.Y1() - tl.Y0();
                     (float, float, float, float)? found = null;
                     foreach (var area in table_areas)
                     {
                         // check for overlap
-                        if (tl.y0() >= area.Key.Item2 && tl.y1() <= area.Key.Item4) // [1] and tl.y1 <= area[3]:
+                        if (tl.Y0() >= area.Key.Item2 && tl.Y1() <= area.Key.Item4) // [1] and tl.y1 <= area[3]:
                         {
                             found = area.Key;
                             break;
@@ -339,10 +339,10 @@ namespace Camelot
                     if (found.HasValue)
                     {
                         table_areas.Remove(found.Value);
-                        var updated_area = (Math.Min(tl.x0(), found.Value.Item1),   //[0]),
-                                            Math.Min(tl.y0(), found.Value.Item2),   //[1]),
-                                            Math.Max(found.Value.Item3, tl.x1()),   //[2], tl.x1),
-                                            Math.Max(found.Value.Item4, tl.y1()));  //[3], tl.y1));
+                        var updated_area = (Math.Min(tl.X0(), found.Value.Item1),   //[0]),
+                                            Math.Min(tl.Y0(), found.Value.Item2),   //[1]),
+                                            Math.Max(found.Value.Item3, tl.X1()),   //[2], tl.x1),
+                                            Math.Max(found.Value.Item4, tl.Y1()));  //[3], tl.y1));
                         table_areas[updated_area] = null;
                     }
                 }

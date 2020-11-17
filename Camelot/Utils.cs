@@ -191,7 +191,7 @@ namespace Camelot
         {
             if (text.Count == 0) return text;
 
-            var t_bbox = text.Where(t => bbox.x1 - 2f <= (t.x0() + t.x1()) / 2f && (t.x0() + t.x1()) / 2f <= bbox.x2 + 2 && bbox.y1 - 2f <= (t.y0() + t.y1()) / 2f && (t.y0() + t.y1()) / 2f <= bbox.y2 + 2f).ToList();
+            var t_bbox = text.Where(t => bbox.x1 - 2f <= (t.X0() + t.X1()) / 2f && (t.X0() + t.X1()) / 2f <= bbox.x2 + 2 && bbox.y1 - 2f <= (t.Y0() + t.Y1()) / 2f && (t.Y0() + t.Y1()) / 2f <= bbox.y2 + 2f).ToList();
 
             // Avoid duplicate text by discarding overlapping boxes
             var rest = t_bbox.Distinct().ToList();
@@ -229,10 +229,10 @@ namespace Camelot
         /// <returns>Area of the intersection of the bounding boxes of both objects</returns>
         public static float BboxIntersectionArea(TextLine ba, TextLine bb)
         {
-            var x_left = Math.Max(ba.x0(), bb.x0());
-            var y_top = Math.Min(ba.y1(), bb.y1());
-            var x_right = Math.Min(ba.x1(), bb.x1());
-            var y_bottom = Math.Max(ba.y0(), bb.y0());
+            var x_left = Math.Max(ba.X0(), bb.X0());
+            var y_top = Math.Min(ba.Y1(), bb.Y1());
+            var x_right = Math.Min(ba.X1(), bb.X1());
+            var y_bottom = Math.Max(ba.Y0(), bb.Y0());
 
             if (x_right < x_left || y_bottom > y_top)
             {
@@ -271,7 +271,7 @@ namespace Camelot
         /// <returns>True if the bounding boxes intersect</returns>
         public static bool BboxIntersect(PdfRectangle ba, PdfRectangle bb)
         {
-            return BboxIntersect((ba.x0(), ba.y0(), ba.x1(), ba.y1()), (bb.x0(), bb.y0(), bb.x1(), bb.y1()));
+            return BboxIntersect((ba.X0(), ba.Y0(), ba.X1(), ba.Y1()), (bb.X0(), bb.Y0(), bb.X1(), bb.Y1()));
         }
 
         /// <summary>
@@ -293,7 +293,7 @@ namespace Camelot
         /// <returns>True if the bounding box of the first object is longer or equal</returns>
         public static bool BboxLonger(PdfRectangle ba, PdfRectangle bb)
         {
-            return (ba.x1() - ba.x0()) >= (bb.x1() - bb.x0());
+            return (ba.X1() - ba.X0()) >= (bb.X1() - bb.X0());
         }
 
         /// <summary>
@@ -393,11 +393,11 @@ namespace Camelot
         public static List<(int, int, string)> SplitTextline(Table table, TextLine textline, string direction, bool flag_size = false, string strip_text = "")
         {
             var cut_text = new List<(int, int, object)>();
-            var bbox = textline.bbox();
+            var bbox = textline.Bbox();
 
             try
             {
-                if (direction == "horizontal" && !textline.is_empty())
+                if (direction == "horizontal" && !textline.IsEmpty())
                 {
                     var x_overlap = table.Cols.Select((x, i) => (x, i)).Where(k => k.x.Item1 <= bbox[2] && bbox[0] <= k.x.Item2).Select(k => k.i).ToArray();
                     var r_idx = table.Rows.Select((_r, j) => (_r, j)).Where(k => k._r.Item2 <= (bbox[1] + bbox[3]) / 2 && (bbox[1] + bbox[3]) / 2 <= k._r.Item1).Select(k => k.j).ToArray();
@@ -408,15 +408,15 @@ namespace Camelot
                         x_cuts = new List<(int c, float x2)>() { (x_overlap[0], table.Cells[r].Last().X2) };
                     }
 
-                    foreach (object obj in textline._objs())
+                    foreach (object obj in textline.Objs())
                     {
                         var row = table.Rows[r];
                         foreach (var cut in x_cuts)
                         {
                             if (obj is Letter l)
                             {
-                                if (row.Item2 <= (l.y0() + l.y1()) / 2f && (l.y0() + l.y1()) / 2f <= row.Item1 &&
-                                    (l.x0() + l.x1()) / 2f <= cut.X2)
+                                if (row.Item2 <= (l.Y0() + l.Y1()) / 2f && (l.Y0() + l.Y1()) / 2f <= row.Item1 &&
+                                    (l.X0() + l.X1()) / 2f <= cut.X2)
                                 {
                                     cut_text.Add((r, cut.c, obj));
                                     break;
@@ -437,7 +437,7 @@ namespace Camelot
                         }
                     }
                 }
-                else if (direction == "vertical" && !textline.is_empty())
+                else if (direction == "vertical" && !textline.IsEmpty())
                 {
                     var y_overlap = table.Rows.Select((y, j) => (y, j)).Where(k => k.y.Item2 <= bbox[3] && bbox[1] <= k.y.Item1).Select(k => k.j).ToArray();
                     var c_idx = table.Cols.Select((_c, i) => (_c, i)).Where(k => k._c.Item1 <= (bbox[0] + bbox[2]) / 2 && (bbox[0] + bbox[2]) / 2 <= k._c.Item2).Select(k => k.i).ToArray();
@@ -448,15 +448,15 @@ namespace Camelot
                         y_cuts = new List<(int r, float y1)>() { (y_overlap[0], table.Cells[-1][c].Y1) };
                     }
 
-                    foreach (object obj in textline._objs())
+                    foreach (object obj in textline.Objs())
                     {
                         var col = table.Cols[c];
                         foreach (var cut in y_cuts)
                         {
                             if (obj is Letter l)
                             {
-                                if (col.Item1 <= (l.x0() + l.x1()) / 2f && (l.x0() + l.x1()) / 2f <= col.Item2 &&
-                                    (l.y0() + l.y1()) / 2f >= cut.Y1)
+                                if (col.Item1 <= (l.X0() + l.X1()) / 2f && (l.X0() + l.X1()) / 2f <= col.Item2 &&
+                                    (l.Y0() + l.Y1()) / 2f >= cut.Y1)
                                 {
                                     cut_text.Add((cut.r, c, obj));
                                     break;
@@ -523,15 +523,15 @@ namespace Camelot
             int c_idx = -1;
             for (int r = 0; r < table.Rows.Count; r++)
             {
-                if ((t.y0() + t.y1()) / 2.0f < table.Rows[r].Item1 && (t.y0() + t.y1()) / 2.0f > table.Rows[r].Item2)
+                if ((t.Y0() + t.Y1()) / 2.0f < table.Rows[r].Item1 && (t.Y0() + t.Y1()) / 2.0f > table.Rows[r].Item2)
                 {
                     var lt_col_overlap = new List<float>();
                     foreach (var c in table.Cols)
                     {
-                        if (c.Item1 <= t.x1() && c.Item2 >= t.x0())
+                        if (c.Item1 <= t.X1() && c.Item2 >= t.X0())
                         {
-                            var left = c.Item1 <= t.x0() ? t.x0() : c.Item1;
-                            var right = c.Item2 >= t.x1() ? t.x1() : c.Item2;
+                            var left = c.Item1 <= t.X0() ? t.X0() : c.Item1;
+                            var right = c.Item2 >= t.X1() ? t.X1() : c.Item2;
                             lt_col_overlap.Add(Math.Abs(left - right) / Math.Abs(c.Item1 - c.Item2));
                         }
                         else
@@ -543,7 +543,7 @@ namespace Camelot
                     if (lt_col_overlap.Count(x => x != -1) == 0)
                     {
                         var text = t.Text.Trim('\n');
-                        var text_range = (t.x0(), t.x1());
+                        var text_range = (t.X0(), t.X1());
                         var col_range = (table.Cols[0].Item1, table.Cols.Last().Item2);
                         log?.Warn($"{text} {text_range} does not lie in column range {col_range}");
                     }
@@ -558,29 +558,29 @@ namespace Camelot
             float y1_offset = 0f;
             float x0_offset = 0f;
             float x1_offset = 0f;
-            if (t.y0() > table.Rows[r_idx].Item1)
+            if (t.Y0() > table.Rows[r_idx].Item1)
             {
-                y0_offset = Math.Abs(t.y0() - table.Rows[r_idx].Item1);
+                y0_offset = Math.Abs(t.Y0() - table.Rows[r_idx].Item1);
             }
 
-            if (t.y1() < table.Rows[r_idx].Item2)
+            if (t.Y1() < table.Rows[r_idx].Item2)
             {
-                y1_offset = Math.Abs(t.y1() - table.Rows[r_idx].Item2);
+                y1_offset = Math.Abs(t.Y1() - table.Rows[r_idx].Item2);
             }
 
-            if (t.x0() < table.Cols[c_idx].Item1)
+            if (t.X0() < table.Cols[c_idx].Item1)
             {
-                x0_offset = Math.Abs(t.x0() - table.Cols[c_idx].Item1);
+                x0_offset = Math.Abs(t.X0() - table.Cols[c_idx].Item1);
             }
 
-            if (t.x1() > table.Cols[c_idx].Item2)
+            if (t.X1() > table.Cols[c_idx].Item2)
             {
-                x1_offset = Math.Abs(t.x1() - table.Cols[c_idx].Item2);
+                x1_offset = Math.Abs(t.X1() - table.Cols[c_idx].Item2);
             }
 
-            float dX = Math.Abs(t.x0() - t.x1());
+            float dX = Math.Abs(t.X0() - t.X1());
             var X = dX == 0.0 ? 1.0f : dX;
-            float dY = Math.Abs(t.y0() - t.y1());
+            float dY = Math.Abs(t.Y0() - t.Y1());
             var Y = dY == 0.0 ? 1.0f : dY;
             float charea = X * Y;
             float error = ((X * (y0_offset + y1_offset)) + (Y * (x0_offset + x1_offset))) / charea;
@@ -597,7 +597,7 @@ namespace Camelot
                     {
                         (r_idx,
                         c_idx,
-                        FlagFontSize(t._objs().ToList(), direction, strip_text:strip_text))
+                        FlagFontSize(t.Objs().ToList(), direction, strip_text:strip_text))
                     },
                     error);
                 }

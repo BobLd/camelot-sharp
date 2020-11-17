@@ -10,55 +10,55 @@ namespace Camelot
         /// <summary>
         /// BottomLeft.X = Left
         /// </summary>
-        public static float x0(this PdfRectangle rectangle) => (float)rectangle.BottomLeft.X;
+        public static float X0(this PdfRectangle rectangle) => (float)rectangle.BottomLeft.X;
 
         /// <summary>
         /// BottomLeft.Y = Bottom
         /// </summary>
-        public static float y0(this PdfRectangle rectangle) => (float)rectangle.BottomLeft.Y;
+        public static float Y0(this PdfRectangle rectangle) => (float)rectangle.BottomLeft.Y;
 
         /// <summary>
         /// TopRight.X = Right
         /// </summary>
-        public static float x1(this PdfRectangle rectangle) => (float)rectangle.TopRight.X;
+        public static float X1(this PdfRectangle rectangle) => (float)rectangle.TopRight.X;
 
         /// <summary>
         /// TopRight.Y = Top
         /// </summary>
-        public static float y1(this PdfRectangle rectangle) => (float)rectangle.TopRight.Y;
+        public static float Y1(this PdfRectangle rectangle) => (float)rectangle.TopRight.Y;
 
         /// <summary>
         /// BottomLeft.X = Left
         /// </summary>
-        public static float x0(this TextLine textLine) => (float)textLine.BoundingBox.x0();
+        public static float X0(this TextLine textLine) => (float)textLine.BoundingBox.X0();
 
         /// <summary>
         /// BottomLeft.Y = Bottom
         /// </summary>
-        public static float y0(this TextLine textLine) => (float)textLine.BoundingBox.y0();
+        public static float Y0(this TextLine textLine) => (float)textLine.BoundingBox.Y0();
 
         /// <summary>
         /// TopRight.X = Right
         /// </summary>
-        public static float x1(this TextLine textLine) => (float)textLine.BoundingBox.x1();
+        public static float X1(this TextLine textLine) => (float)textLine.BoundingBox.X1();
 
         /// <summary>
         /// TopRight.Y = Top
         /// </summary>
-        public static float y1(this TextLine textLine) => (float)textLine.BoundingBox.y1();
+        public static float Y1(this TextLine textLine) => (float)textLine.BoundingBox.Y1();
 
         /// <summary>
         /// (x0, y0, x1, y1)
         /// </summary>
-        public static float[] bbox(this TextLine textLine) => new float[] { textLine.x0(), textLine.y0(), textLine.x1(), textLine.y1() };
+        public static float[] Bbox(this TextLine textLine) => new float[] { textLine.X0(), textLine.Y0(), textLine.X1(), textLine.Y1() };
 
         /// <summary>
         /// https://github.com/euske/pdfminer/blob/423f851fc20ebd701bc4c8b5b7ba0e7904e18e3b/pdfminer/layout.py#L112
         /// </summary>
         /// <param name="textLine"></param>
-        public static bool is_empty(this TextLine textLine) => textLine.BoundingBox.Width <= 0 || textLine.BoundingBox.Height <= 0;
+        public static bool IsEmpty(this TextLine textLine) => textLine.BoundingBox.Width <= 0 || textLine.BoundingBox.Height <= 0;
 
-        public static IEnumerable<Letter> _objs(this TextLine textLine)
+        public static IEnumerable<Letter> Objs(this TextLine textLine)
         {
             foreach (var w in textLine.Words)
             {
@@ -74,21 +74,21 @@ namespace Camelot
         /// <summary>
         /// BottomLeft.X = Left
         /// </summary>
-        public static float x0(this Letter letter) => (float)letter.GlyphRectangle.x0();
+        public static float X0(this Letter letter) => (float)letter.GlyphRectangle.X0();
 
         /// <summary>
         /// BottomLeft.Y = Bottom
         /// </summary>
-        public static float y0(this Letter letter) => (float)letter.GlyphRectangle.y0();
+        public static float Y0(this Letter letter) => (float)letter.GlyphRectangle.Y0();
 
         /// <summary>
         /// TopRight.X = Right
         /// </summary>
-        public static float x1(this Letter letter) => (float)letter.GlyphRectangle.x1();
+        public static float X1(this Letter letter) => (float)letter.GlyphRectangle.X1();
 
         /// <summary>
         /// TopRight.Y = Top
         /// </summary>
-        public static float y1(this Letter letter) => (float)letter.GlyphRectangle.y1();
+        public static float Y1(this Letter letter) => (float)letter.GlyphRectangle.Y1();
     }
 }

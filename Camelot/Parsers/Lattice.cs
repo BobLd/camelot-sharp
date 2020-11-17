@@ -320,8 +320,8 @@ namespace Camelot.Parsers
             t_bbox["horizontal"] = Utils.TextInBbox(tk, this.horizontal_text);
             t_bbox["vertical"] = Utils.TextInBbox(tk, this.vertical_text);
 
-            t_bbox["horizontal"] = t_bbox["horizontal"].OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList();
-            t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.x0()).ThenBy(x => -x.y0()).ToList();
+            t_bbox["horizontal"] = t_bbox["horizontal"].OrderBy(x => -x.Y0()).ThenBy(x => x.X0()).ToList();
+            t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList();
 
             this.t_bbox = t_bbox;
             var cols = this.table_bbox[tk].Select(x => (float)x.Item1).ToList();
@@ -411,8 +411,8 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float x0, float y0, float x1, float y1)>();
-            _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
-            _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
+            _text.AddRange(this.horizontal_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
+            _text.AddRange(this.vertical_text.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             table._text = _text;
             table._segments = (this.vertical_segments, this.horizontal_segments);
             table._textedges = null;
