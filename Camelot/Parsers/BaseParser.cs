@@ -6,6 +6,7 @@ using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.WordExtractor;
+using UglyToad.PdfPig.Logging;
 using static Camelot.Core;
 
 namespace Camelot.Parsers
@@ -17,6 +18,17 @@ namespace Camelot.Parsers
     /// </summary>
     public abstract class BaseParser
     {
+        protected readonly ILog log;
+
+        /// <summary>
+        /// Defines a base parser.
+        /// </summary>
+        /// <param name="log"></param>
+        public BaseParser(ILog log)
+        {
+            this.log = log;
+        }
+
         public string filename { get; protected set; }
 
         public DlaOptions[] layout_kwargs { get; protected set; }
@@ -39,18 +51,9 @@ namespace Camelot.Parsers
 
         public void _generate_layout(string filename, params DlaOptions[] layout_kwargs)
         {
-            //this.filename = filename;
-            //this.layout_kwargs = layout_kwargs;
-            //(this.layout, this.dimensions) = Utils.get_page_layout(filename, layout_kwargs);
-            //this.images = Utils.get_text_objects(this.layout, ltype: "image");
-            //this.horizontal_text = Utils.get_text_objects(this.layout, ltype: "horizontal_text").Cast<TextLine>().ToList();
-            //this.vertical_text = Utils.get_text_objects(this.layout, ltype: "vertical_text").Cast<TextLine>().ToList();
-            //(this.pdf_width, this.pdf_height) = this.dimensions;
-            //this.rootname = Path.GetFileNameWithoutExtension(this.filename); //this.rootname, __ = os.path.splitext(this.filename);
-
             this.filename = filename;
             this.layout_kwargs = layout_kwargs;
-            using (PdfDocument document = PdfDocument.Open(filename))
+            using (PdfDocument document = PdfDocument.Open(filename, new ParsingOptions() { ClipPaths = true, Logger = log }))
             {
                 this.layout = document.GetPage(1); // always page 1 for the moment
             }
@@ -72,8 +75,6 @@ namespace Camelot.Parsers
                 }
             }
 
-            //this.images = this.layout.GetImages().Cast<object>().ToList(); // cast as object for the moment
-
             // get texts
             var nnweOptions = layout_kwargs?.Where(o => o is NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions)?.FirstOrDefault();
             var words = nnweOptions == null ? NearestNeighbourWordExtractor.Instance.GetWords(this.layout.Letters) : NearestNeighbourWordExtractor.Instance.GetWords(this.layout.Letters, nnweOptions);
@@ -94,9 +95,6 @@ namespace Camelot.Parsers
             this.rootname = Path.GetFileNameWithoutExtension(this.filename);
         }
 
-        //public (List<(float, float)> cols, List<(float, float)> rows) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
-
-        //public abstract Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs);
         public abstract List<Table> extract_tables(string filename, bool suppress_stdout, params DlaOptions[] layout_kwargs);
     }
 }

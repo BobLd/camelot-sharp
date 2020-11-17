@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
+using UglyToad.PdfPig.Logging;
 using static Camelot.Core;
 
 namespace Camelot.Parsers
@@ -34,7 +34,7 @@ namespace Camelot.Parsers
                       string strip_text = "",
                       int edge_tol = 50,
                       int row_tol = 2,
-                      int column_tol = 0)
+                      int column_tol = 0) : base(null)
         {
             this.horizontal_text = horizontal_text.ToList();
             this.vertical_text = vertical_text.ToList();
@@ -68,6 +68,7 @@ namespace Camelot.Parsers
         /// <param name="edge_tol">Tolerance parameter for extending textedges vertically.</param>
         /// <param name="row_tol">Tolerance parameter used to combine text vertically, to generate rows.</param>
         /// <param name="column_tol">Tolerance parameter used to combine text horizontally, to generate columns.</param>
+        /// <param name="log"></param>
         public Stream(List<(float x1, float y1, float x2, float y2)> table_regions = null,
                       List<(float x1, float y1, float x2, float y2)> table_areas = null,
                       List<string> columns = null,
@@ -76,7 +77,8 @@ namespace Camelot.Parsers
                       string strip_text = "",
                       int edge_tol = 50,
                       int row_tol = 2,
-                      int column_tol = 0)
+                      int column_tol = 0,
+                      ILog log = null) : base(log)
         {
             this.table_regions = table_regions;
             this.table_areas = table_areas;
@@ -394,7 +396,7 @@ namespace Camelot.Parsers
                         }
                         else
                         {
-                            Debug.Print($"No tables found in table area {table_idx + 1}");
+                            log?.Debug($"No tables found in table area {table_idx + 1}");
                         }
                     }
 
@@ -442,14 +444,15 @@ namespace Camelot.Parsers
                         direction,
                         split_text: this.split_text,
                         flag_size: this.flag_size,
-                        strip_text: this.strip_text);
+                        strip_text: this.strip_text,
+                        log: log);
 
                     //if indices[:2] != (-1, -1):
                     //    pos_errors.append(error)
                     //    for r_idx, c_idx, text in indices:
                     //        table.cells[r_idx][c_idx].text = text
 
-                    // CAREFUL HERE - Not sure the Python is correct
+                    // CAREFUL HERE - Not sure the Python version is correct
                     // indices[:2] != (-1, -1) should always return true 
                     // as indices is [[]] and indices[:2] is 
                     // [[x, y, text0], [x', y', text1]]
@@ -494,21 +497,18 @@ namespace Camelot.Parsers
             var base_filename = Path.GetFileName(this.rootname); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
-                //logger.info(f"Processing {base_filename}");
-                Debug.Print($"Processing {base_filename}");
+                log?.Debug($"Processing {base_filename}");
             }
 
             if (this.horizontal_text == null || this.horizontal_text.Count == 0)
             {
                 if (this.images?.Count > 0)
                 {
-                    //warnings.warn(f"{base_filename} is image-based, camelot only works on text-based pages.")
-                    Debug.Print($"{base_filename} is image-based, camelot only works on text-based pages.");
+                    log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
                 }
                 else
                 {
-                    //warnings.warn(f"No tables found on {base_filename}")
-                    Debug.Print($"No tables found on {base_filename}");
+                    log?.Warn($"No tables found on {base_filename}");
                 }
                 return new List<Table>();
             }

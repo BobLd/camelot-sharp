@@ -1,10 +1,10 @@
 ﻿using Camelot.ImageProcessing;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
+using UglyToad.PdfPig.Logging;
 using static Camelot.Core;
 
 namespace Camelot.Parsers
@@ -131,6 +131,7 @@ namespace Camelot.Parsers
         /// <param name="iterations">Number of times for erosion/dilation is applied.
         /// <para>For more information, refer `OpenCV's dilate https://docs.opencv.org/2.4/modules/imgproc/doc/filtering.html#dilate`.</para></param>
         /// <param name="resolution">Resolution used for PDF to PNG conversion.</param>
+        /// <param name="log"></param>
         /// <param name="kwargs"></param>
         public Lattice(IImageProcesser imageProcesser,
                        IDrawingProcessor drawingProcessor,
@@ -149,7 +150,8 @@ namespace Camelot.Parsers
                        int threshold_constant = -2,
                        int iterations = 0,
                        int resolution = 300,
-                       params string[] kwargs)
+                       ILog log = null,
+                       params string[] kwargs) : base(log)
         {
             this.imageProcesser = imageProcesser;
             this.drawingProcessor = drawingProcessor;
@@ -370,7 +372,8 @@ namespace Camelot.Parsers
                         direction,
                         split_text: this.split_text,
                         flag_size: this.flag_size,
-                        strip_text: this.strip_text);
+                        strip_text: this.strip_text,
+                        log: log);
 
                     // CAREFUL HERE - Not sure the Python version is correct
                     // indices[:2] != (-1, -1) should always return true 
@@ -423,21 +426,18 @@ namespace Camelot.Parsers
             var base_filename = Path.GetFileName(this.rootname); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
-                // logger.info("Processing {}".format(os.path.basename(self.rootname)))
-                Debug.Print($"Processing {base_filename}");
+                log?.Debug($"Processing {base_filename}");
             }
 
             if (base.horizontal_text == null || base.horizontal_text.Count == 0)
             {
                 if (base.images.Count > 0)
                 {
-                    //warnings.warn("{} is image-based, camelot only works on" " text-based pages.".format(os.path.basename(self.rootname)))
-                    Debug.Print($"{base_filename} is image-based, camelot only works on text-based pages.");
+                    log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
                 }
                 else
                 {
-                    //warnings.warn("No tables found on {}".format(os.path.basename(self.rootname)))
-                    Debug.Print($"No tables found on {base_filename}");
+                    log?.Warn($"No tables found on {base_filename}");
                 }
                 return null;
             }

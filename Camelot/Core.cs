@@ -223,7 +223,6 @@ namespace Camelot
                 {
                     if (tl.Text.Trim().Length > 1) // TODO: hacky
                     {
-                        Debug.Print(tl.ToString());
                         this.update(tl);
                     }
                 }

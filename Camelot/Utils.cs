@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
+using UglyToad.PdfPig.Logging;
 using static Camelot.Core;
 
 namespace Camelot
@@ -44,8 +44,6 @@ namespace Camelot
         {
             throw new NotImplementedException();
         }
-
-        // class TemporaryDirectory(object)
 
         /// <summary>
         /// Translates x2 by x1.
@@ -528,7 +526,7 @@ namespace Camelot
         /// <para>|   [Text bounding box]</para>
         /// <para>|       |</para>
         /// <para>+-------+</para></returns>
-        public static (List<(int r_idx, int c_idx, string text)> indices, float error) get_table_index(Table table, TextLine t, string direction, bool split_text = false, bool flag_size = false, string strip_text = "")
+        public static (List<(int r_idx, int c_idx, string text)> indices, float error) get_table_index(Table table, TextLine t, string direction, bool split_text = false, bool flag_size = false, string strip_text = "", ILog log = null)
         {
             int r_idx = -1;
             int c_idx = -1;
@@ -555,9 +553,8 @@ namespace Camelot
                     {
                         var text = t.Text.Trim('\n');
                         var text_range = (t.x0(), t.x1());
-                        var col_range = (table.cols[0].Item1, table.cols.Last().Item2); // [-1][1]
-                        //warnings.warn(f"{text} {text_range} does not lie in column range {col_range}")
-                        Debug.WriteLine($"{text} {text_range} does not lie in column range {col_range}");
+                        var col_range = (table.cols[0].Item1, table.cols.Last().Item2);
+                        log?.Warn($"{text} {text_range} does not lie in column range {col_range}");
                     }
                     r_idx = r;
                     c_idx = lt_col_overlap.IndexOf(lt_col_overlap.Max());
