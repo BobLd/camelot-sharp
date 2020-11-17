@@ -19,12 +19,12 @@ namespace Camelot.Parsers
         /// <summary>
         /// List of page regions that may contain tables of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in PDF coordinate space.
         /// </summary>
-        public List<string> table_regions { get; }
+        public List<(float x1, float y1, float x2, float y2)> table_regions { get; }
 
         /// <summary>
         /// List of table area strings of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in PDF coordinate space.
         /// </summary>
-        public List<string> table_areas { get; }
+        public List<(float x1, float y1, float x2, float y2)> table_areas { get; }
 
         /// <summary>
         /// Process background lines.
@@ -129,8 +129,8 @@ namespace Camelot.Parsers
         /// <param name="kwargs"></param>
         public Lattice(IImageProcesser imageProcesser,
                        IDrawingProcessor drawingProcessor,
-                       List<string> table_regions = null,
-                       List<string> table_areas = null,
+                       List<(float x1, float y1, float x2, float y2)> table_regions = null,
+                       List<(float x1, float y1, float x2, float y2)> table_areas = null,
                        bool process_background = false,
                        int line_scale = 15,
                        List<string> copy_text = null,
@@ -320,17 +320,17 @@ namespace Camelot.Parsers
 
         public void _generate_table_bbox_old()
         {
-            List<(int, int, int, int)> scale_areas(List<string> areas, (float, float, float) img_scalers)
+            List<(int, int, int, int)> scale_areas(List<(float x1, float y1, float x2, float y2)> areas, (float, float, float) img_scalers)
             {
                 var scaled_areas = new List<(int, int, int, int)>();
                 foreach (var area in areas)
                 {
-                    var coords = area.Split(',');
-                    float x1 = float.Parse(coords[0]); //float(x1);
-                    float y1 = float.Parse(coords[1]); //float(y1);
-                    float x2 = float.Parse(coords[2]); //float(x2);
-                    float y2 = float.Parse(coords[3]); //float(y2);
-                    (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf((x1, y1, x2, y2), img_scalers);
+                    //var coords = area.Split(',');
+                    //float x1 = float.Parse(coords[0]); //float(x1);
+                    //float y1 = float.Parse(coords[1]); //float(y1);
+                    //float x2 = float.Parse(coords[2]); //float(x2);
+                    //float y2 = float.Parse(coords[3]); //float(y2);
+                    (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf(area, img_scalers);
                     scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
                 }
                 return scaled_areas;

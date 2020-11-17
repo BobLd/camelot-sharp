@@ -33,7 +33,8 @@ namespace Camelot.ImageProcessing
         }
 
         public (Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox, List<(float, float, float, float)> vertical_segments, List<(float, float, float, float)> horizontal_segments)
-            Process(Page page, IDrawingProcessor drawingProcessor, bool process_background, int threshold_blocksize, int threshold_constant, int line_scale, int iterations, List<string> table_areas, List<string> table_regions, out Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled)
+            Process(Page page, IDrawingProcessor drawingProcessor, bool process_background, int threshold_blocksize, int threshold_constant, int line_scale, int iterations,
+            List<(float x1, float y1, float x2, float y2)> table_areas, List<(float x1, float y1, float x2, float y2)> table_regions, out Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled)
         {
             if (table_areas == null || table_areas.Count == 0)
             {

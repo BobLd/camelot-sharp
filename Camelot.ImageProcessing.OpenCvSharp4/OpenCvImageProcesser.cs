@@ -10,17 +10,12 @@ namespace Camelot.ImageProcessing
 {
     public class OpenCvImageProcesser : IImageProcesser
     {
-        private List<(int, int, int, int)> scale_areas(List<string> areas, (float, float, float) img_scalers)
+        private List<(int, int, int, int)> scale_areas(List<(float x1, float y1, float x2, float y2)> areas, (float, float, float) img_scalers)
         {
             var scaled_areas = new List<(int, int, int, int)>();
             foreach (var area in areas)
             {
-                var coords = area.Split(',');
-                float x1 = float.Parse(coords[0]); //float(x1);
-                float y1 = float.Parse(coords[1]); //float(y1);
-                float x2 = float.Parse(coords[2]); //float(x2);
-                float y2 = float.Parse(coords[3]); //float(y2);
-                (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf((x1, y1, x2, y2), img_scalers);
+                (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf(area, img_scalers);
                 scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
             }
             return scaled_areas;
@@ -29,7 +24,7 @@ namespace Camelot.ImageProcessing
         public (Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox, List<(float, float, float, float)> vertical_segments, List<(float, float, float, float)> horizontal_segments)
             Process(Page page, ImageProcessing.IDrawingProcessor drawingProcessor,
             bool process_background, int threshold_blocksize, int threshold_constant, int line_scale, int iterations,
-            List<string> table_areas, List<string> table_regions, out Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled)
+            List<(float x1, float y1, float x2, float y2)> table_areas, List<(float x1, float y1, float x2, float y2)> table_regions, out Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled)
         {
             Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
             Mat vertical_mask;
