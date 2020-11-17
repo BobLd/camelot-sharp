@@ -160,7 +160,7 @@ namespace Camelot.ImageProcessing.Tests
 
             Assert.Single(tables);
             Assert.Equal(data_lattice_shift_text_left_top.Length, tables[0].cells.Count);
-            Assert.Equal(data_lattice_shift_text_left_top, tables[0].cells.Select(r => r.Select(c => c.text).ToArray()).ToArray());
+            Assert.Equal(data_lattice_shift_text_left_top, tables[0].data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
             lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "" });
             tables = lattice.extract_tables(@"Files\column_span_2.pdf",
@@ -173,7 +173,7 @@ namespace Camelot.ImageProcessing.Tests
                 });
             Assert.Single(tables);
             Assert.Equal(data_lattice_shift_text_disable.Length, tables[0].cells.Count);
-            Assert.Equal(data_lattice_shift_text_disable, tables[0].cells.Select(r => r.Select(c => c.text).ToArray()).ToArray());
+            Assert.Equal(data_lattice_shift_text_disable, tables[0].data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
             lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "r", "b" });
             tables = lattice.extract_tables(@"Files\column_span_2.pdf",
@@ -186,7 +186,7 @@ namespace Camelot.ImageProcessing.Tests
                 });
             Assert.Single(tables);
             Assert.Equal(data_lattice_shift_text_right_bottom.Length, tables[0].cells.Count);
-            Assert.Equal(data_lattice_shift_text_right_bottom, tables[0].cells.Select(r => r.Select(c => c.text).ToArray()).ToArray());
+            Assert.Equal(data_lattice_shift_text_right_bottom, tables[0].data().Select(r => r.Select(c => c).ToArray()).ToArray());
         }
     }
 }

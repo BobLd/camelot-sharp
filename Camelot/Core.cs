@@ -476,13 +476,11 @@ namespace Camelot
             {
                 get
                 {
-                    return _text.TrimEnd('\n'); // added by bobld - TrimEnd('\n')
+                    return _text;
                 }
 
                 set
                 {
-                    //def text(self, t):
-                    //self._text = "".join([self._text, t])
                     this._text = string.Concat(this._text, value);
                 }
             }
