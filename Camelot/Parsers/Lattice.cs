@@ -411,7 +411,6 @@ namespace Camelot.Parsers
             _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
             _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
             table._text = _text;
-            //table._image = (this.image, this.table_bbox_unscaled);
             table._segments = (this.vertical_segments, this.horizontal_segments);
             table._textedges = null;
 

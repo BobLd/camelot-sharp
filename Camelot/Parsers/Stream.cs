@@ -135,11 +135,10 @@ namespace Camelot.Parsers
                 }
             }
 
-            rows.Add(temp.OrderBy(t => t.x0()).ToList());//sorted(temp, key = lambda t: t.x0))
+            rows.Add(temp.OrderBy(t => t.x0()).ToList());
 
             if (rows.Count > 1)
             {
-                // __ = rows.pop(0)  
                 rows.RemoveAt(0); // TODO: hacky
             }
 
@@ -167,11 +166,10 @@ namespace Camelot.Parsers
                     var lower = merged.Last();
                     if (column_tol >= 0)
                     {
-                        //if higher[0] <= lower[1] or np.isclose(higher[0], lower[1], atol = column_tol):
                         if (higher.Item1 <= lower.Item2 || MathExtensions.AlmostEquals(higher.Item1, lower.Item2, column_tol))
                         {
-                            var upper_bound = Math.Max(lower.Item2, higher.Item2); //max(lower[1], higher[1]);
-                            var lower_bound = Math.Min(lower.Item1, higher.Item1); //min(lower[0], higher[0])
+                            var upper_bound = Math.Max(lower.Item2, higher.Item2);
+                            var lower_bound = Math.Min(lower.Item1, higher.Item1);
 #pragma warning disable IDE0056 // Use index operator
                             merged[merged.Count - 1] = (lower_bound, upper_bound);
 #pragma warning restore IDE0056 // Use index operator
@@ -183,18 +181,16 @@ namespace Camelot.Parsers
                     }
                     else if (column_tol < 0)
                     {
-                        // if higher[0] <= lower[1]:
                         if (higher.Item1 <= lower.Item2)
                         {
-                            //if np.isclose(higher[0], lower[1], atol=abs(column_tol)):
                             if (MathExtensions.AlmostEquals(higher.Item1, lower.Item2, Math.Abs(column_tol)))
                             {
                                 merged.Add(higher);
                             }
                             else
                             {
-                                var upper_bound = Math.Max(lower.Item2, higher.Item2); // max(lower[1], higher[1])
-                                var lower_bound = Math.Min(lower.Item1, higher.Item1); //min(lower[0], higher[0])
+                                var upper_bound = Math.Max(lower.Item2, higher.Item2);
+                                var lower_bound = Math.Min(lower.Item1, higher.Item1);
 #pragma warning disable IDE0056 // Use index operator
                                 merged[merged.Count - 1] = (lower_bound, upper_bound);
 #pragma warning restore IDE0056 // Use index operator
@@ -239,9 +235,9 @@ namespace Camelot.Parsers
             if (text?.Count > 0)
             {
                 var new_text = _group_rows(text, row_tol).ToList();
-                var elementsMax = new_text.Max(r => r.Count); //elements = [len(r) for r in text]
-                var new_cols = new_text.Where(r => r.Count == elementsMax).SelectMany(r => r.Select(t => (t.x0(), t.x1()))); //use SelectMany      //new_cols = [(t.x0, t.x1) for r in text if len(r) == max(elements) for t in r]
-                cols.AddRange(_merge_columns(new_cols.OrderBy(x => x)));      //cols.extend(Stream._merge_columns(sorted(new_cols)))
+                var elementsMax = new_text.Max(r => r.Count);
+                var new_cols = new_text.Where(r => r.Count == elementsMax).SelectMany(r => r.Select(t => (t.x0(), t.x1())));
+                cols.AddRange(_merge_columns(new_cols.OrderBy(x => x)));
             }
             return cols;
         }
@@ -259,7 +255,7 @@ namespace Camelot.Parsers
             var col = Enumerable.Range(1, cols.Count - 1).Select(i => (cols[i].Item1 + cols[i - 1].Item2) / 2f).ToList();
             col.Insert(0, text_x_min);
             col.Add(text_x_max);
-            return Enumerable.Range(0, col.Count - 1).Select(i => (col[i], col[i + 1])).ToList(); //cols = [(cols[i], cols[i + 1]) for i in range(0, len(cols) - 1)]
+            return Enumerable.Range(0, col.Count - 1).Select(i => (col[i], col[i + 1])).ToList();
         }
 
         private void _validate_columns()
@@ -285,7 +281,7 @@ namespace Camelot.Parsers
         {
             // TODO: add support for arabic text #141
             // sort textlines in reading order
-            textlines = textlines.OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList(); //sort(key = lambda x: (-x.y0, x.x0))
+            textlines = textlines.OrderBy(x => -x.y0()).ThenBy(x => x.x0()).ToList();
             var textedges = new TextEdges(this.edge_tol);
             // generate left, middle and right textedges
             textedges.generate(textlines);
@@ -297,7 +293,7 @@ namespace Camelot.Parsers
             // treat whole page as table area if no table areas found
             if (table_bbox.Count == 0)
             {
-                table_bbox = new Dictionary<(float, float, float, float), object>() // { (0, 0, self.pdf_width, self.pdf_height): None}
+                table_bbox = new Dictionary<(float, float, float, float), object>()
                 {
                     {(0, 0, this.pdf_width, this.pdf_height), null }
                 };
@@ -313,23 +309,17 @@ namespace Camelot.Parsers
         {
             this.textedges = new List<TextEdge>();
             Dictionary<(float, float, float, float), object> table_bbox;
-            if (this.table_areas == null || this.table_areas.Count == 0) // if self.table_areas is None:
+            if (this.table_areas == null || this.table_areas.Count == 0)
             {
                 var hor_text = this.horizontal_text;
-                if (this.table_regions?.Count > 0) // if self.table_regions is not None:
+                if (this.table_regions?.Count > 0)
                 {
                     // filter horizontal text
                     hor_text = new List<TextLine>();
                     foreach (var region in this.table_regions)
                     {
-                        //x1, y1, x2, y2 = region.split(",")
-                        //x1 = float(x1)
-                        //y1 = float(y1)
-                        //x2 = float(x2)
-                        //y2 = float(y2)
-                        //region_text = text_in_bbox((x1, y2, x2, y1), self.horizontal_text)
                         var region_text = Utils.text_in_bbox(region, this.horizontal_text);
-                        hor_text.AddRange(region_text); // hor_text.extend(region_text)
+                        hor_text.AddRange(region_text);
                     }
                 }
                 // find tables based on nurminen's detection algorithm
@@ -340,12 +330,6 @@ namespace Camelot.Parsers
                 table_bbox = new Dictionary<(float, float, float, float), object>();
                 foreach (var area in this.table_areas)
                 {
-                    //x1, y1, x2, y2 = area.split(",")
-                    //x1 = float(x1)
-                    //y1 = float(y1)
-                    //x2 = float(x2)
-                    //y2 = float(y2)
-                    //table_bbox[(x1, y2, x2, y1)] = None
                     table_bbox[area] = null;
                 }
             }
@@ -370,7 +354,7 @@ namespace Camelot.Parsers
             (float text_x_min, float text_y_min, float text_x_max, float text_y_max) = _text_bbox(this.t_bbox);
             var rows_grouped = _group_rows(this.t_bbox["horizontal"], this.row_tol);
             var rows = _join_rows(rows_grouped, text_y_max, text_y_min);
-            var elements = rows_grouped.Select(r => r.Count).ToList(); //[len(r) for r in rows_grouped];
+            var elements = rows_grouped.Select(r => r.Count).ToList();
 
             List<(float, float)> cols;
             if (this.columns?.Count > 0 && columns[table_idx] != "")
@@ -403,10 +387,9 @@ namespace Camelot.Parsers
                         // try to remove all 1s from list in this case and
                         // see if the list contains elements, if yes, then use
                         // the mode after removing 1s
-                        elements = elements.Where(x => x != 1).ToList(); //list(filter(lambda x: x != 1, elements))
+                        elements = elements.Where(x => x != 1).ToList();
                         if (elements.Count > 0)
                         {
-                            //ncols = max(set(elements), key=elements.count)
                             ncols = elements.GroupBy(x => x).OrderByDescending(g => g.Count()).First().Key; // get mode
                         }
                         else
@@ -415,19 +398,17 @@ namespace Camelot.Parsers
                         }
                     }
 
-                    cols = rows_grouped.Where(r => r.Count == ncols).SelectMany(r => r.Select(t => (t.x0(), t.x1()))).ToList(); //cols = [(t.x0, t.x1) for r in rows_grouped if len(r) == ncols for t in r]
-                    cols = _merge_columns(cols.OrderBy(c => c), column_tol); //cols = self._merge_columns(sorted(cols), column_tol = self.column_tol)
+                    cols = rows_grouped.Where(r => r.Count == ncols).SelectMany(r => r.Select(t => (t.x0(), t.x1()))).ToList();
+                    cols = _merge_columns(cols.OrderBy(c => c), column_tol);
 
                     var inner_text = new List<TextLine>();
                     for (int i = 1; i < cols.Count; i++)
                     {
                         var left = cols[i - 1].Item2;
                         var right = cols[i].Item1;
-                        //inner_text.extend([t for direction in self.t_bbox for t in self.t_bbox[direction] if t.x0 > left and t.x1 < right])
                         inner_text.AddRange(this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.x0() > left && t.x1() < right)).ToList());
                     }
 
-                    // outer_text = [t for direction in self.t_bbox for t in self.t_bbox[direction] if t.x0 > cols[-1][1] or t.x1 < cols[0][0]]
                     var outer_text = this.t_bbox.SelectMany(dir => dir.Value.Where(t => t.x0() > cols.Last().Item2 || t.x1() < cols[0].Item1)).ToList();
                     inner_text.AddRange(outer_text);
                     cols = _add_columns(cols, inner_text, this.row_tol);
@@ -498,17 +479,16 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float, float, float, float)>();
-            _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1()))); //_text.extend([(t.x0, t.y0, t.x1, t.y1) for t in this.horizontal_text]) ;
-            _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));    //_text.extend([(t.x0, t.y0, t.x1, t.y1) for t in this.vertical_text]) ;
+            _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
+            _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
             table._text = _text;
-            //table._image = null;
             table._segments = (null, null);
             table._textedges = this.textedges;
 
             return table;
         }
 
-        public override List<Table> extract_tables(string filename, bool suppress_stdout = false, DlaOptions[] layout_kwargs = null)
+        public override List<Table> extract_tables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
             this._generate_layout(filename, layout_kwargs);
             var base_filename = Path.GetFileName(this.rootname); //os.path.basename(self.rootname)
