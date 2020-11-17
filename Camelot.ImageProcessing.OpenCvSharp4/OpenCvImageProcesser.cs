@@ -54,7 +54,9 @@ namespace Camelot.ImageProcessing
 
             List<(int, int, int, int)> horizontal_segments;
 
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (var ms = drawingProcessor.DrawPage(page, 3))
+#pragma warning restore IDE0063 // Use simple 'using' statement
             using (var image = Mat.FromImageData(ms.ToArray()))
             {
                 (Mat img, Mat threshold) = AdaptiveThreshold(
@@ -75,7 +77,7 @@ namespace Camelot.ImageProcessing
                 if (table_areas == null || table_areas.Count == 0)
                 {
                     List<(int, int, int, int)> regions = null;
-                    if (table_regions != null && table_regions.Count > 0)
+                    if (table_regions?.Count > 0)
                     {
                         regions = ScaleAreas(table_regions, image_scalers);
                     }
@@ -157,7 +159,9 @@ namespace Camelot.ImageProcessing
         /// <para>threshold : object - numpy.ndarray representing the thresholded image.</para></returns>
         public (Mat img, Mat threshold) AdaptiveThreshold(Mat image, bool process_background = false, int blocksize = 15, int c = -2)
         {
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (var gray = new Mat())
+#pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 var threshold = new Mat();
                 Cv2.CvtColor(image, gray, ColorConversionCodes.BGR2GRAY);
@@ -195,7 +199,9 @@ namespace Camelot.ImageProcessing
             string direction = "horizontal", int line_scale = 15, int iterations = 0)
         {
             List<(int, int, int, int)> lines = new List<(int, int, int, int)>();
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (Mat threshold_local = threshold.Clone())
+#pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 Mat el = null;
                 if (direction == "vertical")
@@ -265,7 +271,9 @@ namespace Camelot.ImageProcessing
         /// h -> height in image coordinate space.</returns>
         public List<(int x, int y, int w, int h)> FindContours(Mat vertical, Mat horizontal)
         {
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (var mask = (Mat)(vertical + horizontal))
+#pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 Debug.Assert(mask.Channels() == 1);
                 Cv2.FindContours(mask, out Point[][] contours, out _, RetrievalModes.External, ContourApproximationModes.ApproxSimple);
@@ -296,7 +304,9 @@ namespace Camelot.ImageProcessing
         /// Keys are of the form (x1, y1, x2, y2) where (x1, y1) -> lb and (x2, y2) -> rt in image coordinate space.</returns>
         public Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> FindJoints(List<(int x, int y, int w, int h)> contours, Mat vertical, Mat horizontal)
         {
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (Mat joints = new Mat())
+#pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 Cv2.Multiply(vertical, horizontal, joints);
                 var tables = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>();
@@ -318,8 +328,8 @@ namespace Camelot.ImageProcessing
                     foreach (var j in jc)
                     {
                         (int jx, int jy, int jw, int jh) = Cv2.BoundingRect(j).ToTuple();
-                        int c1 = x + (2 * jx + jw).FloorDiv(2);
-                        int c2 = y + (2 * jy + jh).FloorDiv(2);
+                        int c1 = x + ((2 * jx) + jw).FloorDiv(2);
+                        int c2 = y + ((2 * jy) + jh).FloorDiv(2);
                         joint_coords.Add((c1, c2));
                     }
 

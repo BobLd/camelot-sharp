@@ -13,7 +13,7 @@ namespace Camelot.ImageProcessing
             if (table_areas == null || table_areas.Count == 0)
             {
                 List<(int, int, int, int)> regions = null;
-                if (table_regions != null && table_regions.Count > 0)
+                if (table_regions?.Count > 0)
                 {
 
                 }

@@ -110,7 +110,9 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                     if (path.IsFilled)
                     {
                         gp.FillMode = ToSystemFillMode(path.FillingRule);
+#pragma warning disable IDE0063 // Use simple 'using' statement
                         using (var brush = new SolidBrush(ToSystemColor(path.FillColor)))
+#pragma warning restore IDE0063 // Use simple 'using' statement
                         {
                             currentGraphics.FillPath(brush, gp);
                         }
@@ -120,7 +122,9 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                     {
                         try
                         {
+#pragma warning disable IDE0063 // Use simple 'using' statement
                             using (var pen = new Pen(ToSystemColor(path.StrokeColor)))
+#pragma warning restore IDE0063 // Use simple 'using' statement
                             {
                                 currentGraphics.DrawPath(pen, gp);
                             }
@@ -146,7 +150,9 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
         {
             if (image.TryGetPng(out var png))
             {
+#pragma warning disable IDE0063 // Use simple 'using' statement
                 using (var img = Image.FromStream(new MemoryStream(png)))
+#pragma warning restore IDE0063 // Use simple 'using' statement
                 {
                     img.RotateFlip(RotateFlipType.RotateNoneFlipY);
                     graphics.DrawImage(img, new RectangleF(0, 0, 1, 1));
@@ -158,7 +164,9 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                 {
                     try
                     {
+#pragma warning disable IDE0063 // Use simple 'using' statement
                         using (var img = Image.FromStream(new MemoryStream(bytes.ToArray())))
+#pragma warning restore IDE0063 // Use simple 'using' statement
                         {
                             img.RotateFlip(RotateFlipType.RotateNoneFlipY);
                             graphics.DrawImage(img, new RectangleF(0, 0, 1, 1));
@@ -166,14 +174,14 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                         return;
                     }
                     catch (Exception)
-                    {
-
-                    }
+                    { }
                 }
 
                 try
                 {
+#pragma warning disable IDE0063 // Use simple 'using' statement
                     using (var img = Image.FromStream(new MemoryStream(image.RawBytes.ToArray())))
+#pragma warning restore IDE0063 // Use simple 'using' statement
                     {
                         img.RotateFlip(RotateFlipType.RotateNoneFlipY);
                         graphics.DrawImage(img, new RectangleF(0, 0, 1, 1));
@@ -195,19 +203,22 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
         {
             if (pdfColor != null)
             {
-                var colorRgb = pdfColor.ToRGBValues();
-                return Color.FromArgb((int)(colorRgb.r * 255), (int)(colorRgb.g * 255), (int)(colorRgb.b * 255));
+                var (r, g, b) = pdfColor.ToRGBValues();
+                return Color.FromArgb((int)(r * 255), (int)(g * 255), (int)(b * 255));
             }
             return Color.Black;
         }
 
         public static FillMode ToSystemFillMode(FillingRule fillingRule)
         {
+#pragma warning disable IDE0066 // Convert switch statement to expression
             switch (fillingRule)
+#pragma warning restore IDE0066 // Convert switch statement to expression
             {
                 case FillingRule.NonZeroWinding:
                     return FillMode.Winding;
 
+                case FillingRule.None:
                 case FillingRule.EvenOdd:
                 default:
                     return FillMode.Alternate;

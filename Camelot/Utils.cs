@@ -120,10 +120,10 @@ namespace Camelot
                 x2 = Scale(x2, scaling_factor_x);
                 y2 = Scale(Math.Abs(Translate(-img_y, y2)), scaling_factor_y);
 
-                var j_x = tables[k].Select(x => (float)x.Item1).ToList();
-                var j_y = tables[k].Select(x => (float)x.Item2).ToList();
-                j_x = j_x.Select(j => Scale(j, scaling_factor_x)).ToList();
-                j_y = j_y.Select(j => Scale(Math.Abs(Translate(-img_y, j)), scaling_factor_y)).ToList();
+                List<float> j_x = tables[k].ConvertAll(x => x.Item1);
+                List<float> j_y = tables[k].ConvertAll(x => x.Item2);
+                j_x = j_x.ConvertAll(j => Scale(j, scaling_factor_x));
+                j_y = j_y.ConvertAll(j => Scale(Math.Abs(Translate(-img_y, j)), scaling_factor_y));
 
                 tables_new[(x1, y1, x2, y2)] = j_x.Zip(j_y, (x, y) => (x, y)).ToList();
             }
@@ -329,7 +329,9 @@ namespace Camelot
                     if (MathExtensions.AlmostEquals(temp, a, line_tol))
                     {
                         temp = (temp + a) / 2f;
+#pragma warning disable IDE0056 // Use index operator
                         ret[ret.Count - 1] = temp;
+#pragma warning restore IDE0056 // Use index operator
                     }
                     else
                     {

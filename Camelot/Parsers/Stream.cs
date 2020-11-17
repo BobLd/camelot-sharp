@@ -484,9 +484,9 @@ namespace Camelot.Parsers
             var _text = new List<(float, float, float, float)>();
             _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
-            table._text = _text;
-            table.segments = (null, null);
-            table.textedges = this.textedges;
+            table.Text = _text;
+            table.Segments = (null, null);
+            table.Textedges = this.textedges;
 
             return table;
         }
@@ -522,7 +522,7 @@ namespace Camelot.Parsers
             {
                 (var cols, var rows) = this.GenerateColumnsAndRows(table_idx, tk);
                 var table = this.GenerateTable(table_idx, cols, rows);
-                table._bbox = tk;
+                table.Bbox = tk;
                 _tables.Add(table);
                 table_idx++;
             }

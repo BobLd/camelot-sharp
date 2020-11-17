@@ -421,7 +421,7 @@ namespace Camelot.Tests
             var actual = stream.GenerateTable(0, cols, rows);
 
             Assert.Equal((16, 5), actual.Shape);
-            Assert.Equal(78, actual._text.Count);
+            Assert.Equal(78, actual.Text.Count);
             Assert.Equal(46.25, actual.Whitespace);
             Assert.Equal(97.09215, actual.Accuracy, 4);
             Assert.Equal("stream", actual.Flavor);

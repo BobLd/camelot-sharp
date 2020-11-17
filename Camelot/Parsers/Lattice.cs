@@ -94,12 +94,12 @@ namespace Camelot.Parsers
         public int Resolution { get; }
 
         /// <summary>
-        /// 
+        /// Image Processer.
         /// </summary>
         public IImageProcesser ImageProcesser { get; }
 
         /// <summary>
-        /// 
+        /// Drawing Processor.
         /// </summary>
         public IDrawingProcessor DrawingProcessor { get; }
 
@@ -153,24 +153,24 @@ namespace Camelot.Parsers
                        ILog log = null,
                        params string[] kwargs) : base(log)
         {
-            this.ImageProcesser = imageProcesser;
-            this.DrawingProcessor = drawingProcessor;
+            ImageProcesser = imageProcesser;
+            DrawingProcessor = drawingProcessor;
 
-            this.TableRegions = table_regions;
-            this.TableAreas = table_areas;
-            this.ProcessBackground = process_background;
-            this.LineScale = line_scale;
-            this.CopyText = copy_text;
-            this.ShiftText = shift_text == null ? new[] { "l", "t" } : shift_text;
-            this.SplitText = split_text;
-            this.FlagSize = flag_size;
-            this.StripText = strip_text;
-            this.LineTol = line_tol;
-            this.JointTol = joint_tol;
-            this.ThresholdBlocksize = threshold_blocksize;
-            this.ThresholdConstant = threshold_constant;
-            this.Iterations = iterations;
-            this.Resolution = resolution;
+            TableRegions = table_regions;
+            TableAreas = table_areas;
+            ProcessBackground = process_background;
+            LineScale = line_scale;
+            CopyText = copy_text;
+            ShiftText = shift_text ?? (new[] { "l", "t" });
+            SplitText = split_text;
+            FlagSize = flag_size;
+            StripText = strip_text;
+            LineTol = line_tol;
+            JointTol = joint_tol;
+            ThresholdBlocksize = threshold_blocksize;
+            ThresholdConstant = threshold_constant;
+            Iterations = iterations;
+            Resolution = resolution;
         }
 
         /// <summary>
@@ -197,10 +197,9 @@ namespace Camelot.Parsers
                         case "l":
                             if (t.Cells[r_idx][c_idx].HSpan)
                             {
-
                                 while (!t.Cells[r_idx][c_idx_local].Left)
                                 {
-                                    c_idx_local -= 1;
+                                    c_idx_local--;
                                 }
                             }
                             break;
@@ -210,7 +209,7 @@ namespace Camelot.Parsers
                             {
                                 while (!t.Cells[r_idx][c_idx_local].Right)
                                 {
-                                    c_idx_local += 1;
+                                    c_idx_local++;
                                 }
                             }
                             break;
@@ -220,7 +219,7 @@ namespace Camelot.Parsers
                             {
                                 while (!t.Cells[r_idx_local][c_idx].Top)
                                 {
-                                    r_idx_local -= 1;
+                                    r_idx_local--;
                                 }
                             }
                             break;
@@ -230,7 +229,7 @@ namespace Camelot.Parsers
                             {
                                 while (!t.Cells[r_idx_local][c_idx].Bottom)
                                 {
-                                    r_idx_local += 1;
+                                    r_idx_local++;
                                 }
                             }
                             break;
@@ -267,7 +266,7 @@ namespace Camelot.Parsers
                     {
                         for (int j = 0; j < t.Cells[i].Count; j++)
                         {
-                            if (t.Cells[i][j].Text.Trim() == "")
+                            if (t.Cells[i][j].Text.Trim()?.Length == 0)
                             {
                                 if (t.Cells[i][j].HSpan && !t.Cells[i][j].Left)
                                 {
@@ -283,7 +282,7 @@ namespace Camelot.Parsers
                     {
                         for (int j = 0; j < t.Cells[i].Count; j++)
                         {
-                            if (t.Cells[i][j].Text.Trim() == "")
+                            if (t.Cells[i][j].Text.Trim()?.Length == 0)
                             {
                                 if (t.Cells[i][j].VSpan && !t.Cells[i][j].Top)
                                 {
@@ -324,8 +323,8 @@ namespace Camelot.Parsers
             t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.X0()).ThenBy(x => -x.Y0()).ToList();
 
             this.tBbox = t_bbox;
-            var cols = this.tableBbox[tk].Select(x => (float)x.Item1).ToList();
-            var rows = this.tableBbox[tk].Select(x => (float)x.Item2).ToList();
+            var cols = this.tableBbox[tk].ConvertAll(x => x.Item1);
+            var rows = this.tableBbox[tk].ConvertAll(x => x.Item2);
 
             cols.AddRange(new[] { tk.Item1, tk.Item3 });
             rows.AddRange(new[] { tk.Item2, tk.Item4 });
@@ -413,9 +412,9 @@ namespace Camelot.Parsers
             var _text = new List<(float x0, float y0, float x1, float y1)>();
             _text.AddRange(this.HorizontalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
             _text.AddRange(this.VerticalText.Select(t => (t.X0(), t.Y0(), t.X1(), t.Y1())));
-            table._text = _text;
-            table.segments = (this.verticalSegments, this.horizontalSegments);
-            table.textedges = null;
+            table.Text = _text;
+            table.Segments = (this.verticalSegments, this.horizontalSegments);
+            table.Textedges = null;
 
             return table;
         }
@@ -447,11 +446,11 @@ namespace Camelot.Parsers
             var _tables = new List<Table>();
             // sort tables based on y-coord
             int table_idx = 0;
-            foreach (var tk in this.tableBbox.Keys.OrderByDescending(kvp => kvp.Item2))
+            foreach (var tk in this.tableBbox.Keys.OrderByDescending(kvp => kvp.y1))
             {
                 (var cols, var rows, var v_s, var h_s) = this.GenerateColumnsAndRows(table_idx, tk);
                 var table = this.GenerateTable(table_idx, cols, rows, v_s: v_s, h_s: h_s);
-                table._bbox = tk;
+                table.Bbox = tk;
                 _tables.Add(table);
                 table_idx++;
             }

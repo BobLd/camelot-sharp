@@ -14,7 +14,7 @@ namespace Camelot.ImageProcessing.Tests
         /// <summary>
         /// Height, Width, Channels
         /// </summary>
-        public static int[] shape(Mat mat)
+        public static int[] Shape(Mat mat)
         {
             if (mat.Channels() > 1)
             {
@@ -34,21 +34,21 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void AdaptiveThreshold()
         {
-            string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = @"Files\PMC5055614_00002.jpg";
 
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
-            Assert.Equal(new int[] { 794, 596, 3 }, shape(img));
-            Assert.Equal(new int[] { 794, 596 }, shape(threshold));
+            Assert.Equal(new int[] { 794, 596, 3 }, Shape(img));
+            Assert.Equal(new int[] { 794, 596 }, Shape(threshold));
             using (var th = threshold.ToBitmap())
             {
                 th.Save(@"Files\Output\PMC5055614_00002_threshold.png");
             }
 
             (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
-            Assert.Equal(new int[] { 794, 596, 3 }, shape(img_bg));
-            Assert.Equal(new int[] { 794, 596 }, shape(threshold_bg));
+            Assert.Equal(new int[] { 794, 596, 3 }, Shape(img_bg));
+            Assert.Equal(new int[] { 794, 596 }, Shape(threshold_bg));
             using (var th = threshold_bg.ToBitmap())
             {
                 th.Save(@"Files\Output\PMC5055614_00002_threshold_bg.png");
@@ -63,7 +63,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void FindLines()
         {
-            string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = @"Files\PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             // horizontal
@@ -187,12 +187,12 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void FindContours()
         {
-            string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = @"Files\PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
-            (var vertical_mask, var vertical_segments) = _imageProcessing.FindLines(threshold, direction: "vertical");
-            (var horizontal_mask, var horizontal_segments) = _imageProcessing.FindLines(threshold); //, direction: "horizontal");
+            (var vertical_mask, var _) = _imageProcessing.FindLines(threshold, direction: "vertical");
+            (var horizontal_mask, var _) = _imageProcessing.FindLines(threshold); //, direction: "horizontal");
 
             var contours = _imageProcessing.FindContours(vertical_mask, horizontal_mask);
             var expected_contours = new List<(int, int, int, int)>()
@@ -212,8 +212,8 @@ namespace Camelot.ImageProcessing.Tests
             Assert.Equal(expected_contours, contours);
 
             (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
-            (var vertical_mask_bg, var vertical_segments_bg) = _imageProcessing.FindLines(threshold_bg, direction: "vertical");
-            (var horizontal_mask_bg, var horizontal_segments_bg) = _imageProcessing.FindLines(threshold_bg, direction: "horizontal");
+            (var vertical_mask_bg, var _) = _imageProcessing.FindLines(threshold_bg, direction: "vertical");
+            (var horizontal_mask_bg, var _) = _imageProcessing.FindLines(threshold_bg, direction: "horizontal");
 
             var contours_bg = _imageProcessing.FindContours(vertical_mask_bg, horizontal_mask_bg);
             var expected_contours_bg = new List<(int, int, int, int)>()
@@ -246,12 +246,12 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void FindJoints()
         {
-            string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = @"Files\PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, true);
-            (var vertical_mask, var vertical_segments) = _imageProcessing.FindLines(threshold, direction: "vertical");
-            (var horizontal_mask, var horizontal_segments) = _imageProcessing.FindLines(threshold, direction: "horizontal");
+            (var vertical_mask, var _) = _imageProcessing.FindLines(threshold, direction: "vertical");
+            (var horizontal_mask, var _) = _imageProcessing.FindLines(threshold, direction: "horizontal");
 
             var contours = _imageProcessing.FindContours(vertical_mask, horizontal_mask);
             var table_bbox = _imageProcessing.FindJoints(contours, vertical_mask, horizontal_mask);
@@ -409,7 +409,9 @@ namespace Camelot.ImageProcessing.Tests
         {
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
+#pragma warning disable IDE0063 // Use simple 'using' statement
             using (var document = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+#pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 var page = document.GetPage(1);
 
@@ -417,7 +419,7 @@ namespace Camelot.ImageProcessing.Tests
 
                 Assert.Single(table_bbox);
                 Assert.Equal(new[] { (120.0f, 116.66666666666666f, 492.0f, 234.33333333333331f) }.ToList(), table_bbox.Keys.ToList(), new TestHelper.ListTuple4EqualityComparer(0));
-                Assert.Equal(52, table_bbox.Values.First().Count()); // should be 57, difference comes from rendering
+                Assert.Equal(52, table_bbox.Values.First().Count); // should be 57, difference comes from rendering
 
                 var vertical_segments_expected = new List<(float, float, float, float)>()
                 {

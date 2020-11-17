@@ -538,15 +538,15 @@ namespace Camelot
 
             public List<List<Cell>> Cells { get; }
 
-            public (float x1, float y1, float x2, float y2) _bbox { get; internal set; }
+            public (float x1, float y1, float x2, float y2) Bbox { get; internal set; }
 
             public string Flavor { get; internal set; }
 
-            public List<(float, float, float, float)> _text { get; internal set; }
+            public List<(float, float, float, float)> Text { get; internal set; }
 
-            internal (List<(float, float, float, float)>, List<(float, float, float, float)>) segments { get; set; }
+            internal (List<(float, float, float, float)>, List<(float, float, float, float)>) Segments { get; set; }
 
-            internal List<TextEdge> textedges { get; set; }
+            internal List<TextEdge> Textedges { get; set; }
 
             /// <summary>
             /// Defines a table with coordinates relative to a left-bottom origin. (PDF coordinate space)
@@ -995,12 +995,12 @@ namespace Camelot
             /// </summary>
             public int N => this.Count;
 
-            internal void _write_file(object f = null, params string[] kwargs)
+            internal void WriteFile(object f = null, params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
 
-            internal void _compress_dir(params string[] kwargs)
+            internal void CompressDir(params string[] kwargs)
             {
                 throw new NotImplementedException();
             }
