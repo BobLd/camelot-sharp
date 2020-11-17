@@ -103,6 +103,11 @@ namespace Camelot.Parsers
         /// </summary>
         public IDrawingProcessor drawingProcessor { get; }
 
+        Dictionary<string, List<TextLine>> t_bbox;
+        List<(float, float, float, float)> vertical_segments;
+        List<(float, float, float, float)> horizontal_segments;
+        Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
+
         /// <summary>
         /// Lattice method of parsing looks for lines between text to parse the table.
         /// </summary>
@@ -291,18 +296,6 @@ namespace Camelot.Parsers
             return t;
         }
 
-        public void _generate_image()
-        {
-            // from ..ext.ghostscript import Ghostscript
-        }
-
-        byte[] image;
-        byte[] threshold;
-
-        Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox_unscaled;
-        List<(float, float, float, float)> vertical_segments;
-        List<(float, float, float, float)> horizontal_segments;
-
         public void _generate_table_bbox()
         {
             (this.table_bbox, this.vertical_segments, this.horizontal_segments) = imageProcesser.Process(
@@ -317,89 +310,6 @@ namespace Camelot.Parsers
                 this.table_regions);
         }
 
-        //public void _generate_table_bbox_old()
-        //{
-        //    List<(int, int, int, int)> scale_areas(List<(float x1, float y1, float x2, float y2)> areas, (float, float, float) img_scalers)
-        //    {
-        //        var scaled_areas = new List<(int, int, int, int)>();
-        //        foreach (var area in areas)
-        //        {
-        //            (int x1_s, int y1_s, int x2_s, int y2_s) = Utils.scale_pdf(area, img_scalers);
-        //            scaled_areas.Add((x1_s, y1_s, Math.Abs(x2_s - x1_s), Math.Abs(y2_s - y1_s)));
-        //        }
-        //        return scaled_areas;
-        //    }
-
-        //    (this.image, this.threshold) = imageProcesser.adaptive_threshold(
-        //        this.image,
-        //        process_background: this.process_background,
-        //        blocksize: this.threshold_blocksize,
-        //        c: this.threshold_constant);
-
-        //    (int image_width, int image_height, int _) = imageProcesser.GetImageShape(this.image);
-        //    var image_width_scaler = image_width / (float)this.pdf_width;
-        //    var image_height_scaler = image_height / (float)this.pdf_height;
-        //    var pdf_width_scaler = this.pdf_width / (float)image_width;
-        //    var pdf_height_scaler = this.pdf_height / (float)image_height;
-        //    var image_scalers = (image_width_scaler, image_height_scaler, this.pdf_height);
-        //    var pdf_scalers = (pdf_width_scaler, pdf_height_scaler, image_height);
-
-        //    List<(int, int, int, int)> vertical_segments, horizontal_segments;
-        //    byte[] vertical_mask, horizontal_mask;
-        //    if (this.table_areas == null || this.table_areas.Count == 0)
-        //    {
-        //        List<(int, int, int, int)> regions = null;
-        //        if (this.table_regions != null && this.table_regions.Count > 0)
-        //        {
-        //            regions = scale_areas(this.table_regions, image_scalers);
-        //        }
-
-        //        (vertical_mask, vertical_segments) = imageProcesser.find_lines(
-        //            this.threshold,
-        //            regions: regions,
-        //            direction: "vertical",
-        //            line_scale: this.line_scale,
-        //            iterations: this.iterations);
-
-        //        (horizontal_mask, horizontal_segments) = imageProcesser.find_lines(
-        //            this.threshold,
-        //            regions: regions,
-        //            direction: "horizontal",
-        //            line_scale: this.line_scale,
-        //            iterations: this.iterations);
-
-        //        var contours = imageProcesser.find_contours(vertical_mask, horizontal_mask);
-        //        table_bbox = imageProcesser.find_joints(contours, vertical_mask, horizontal_mask);
-        //    }
-        //    else
-        //    {
-        //        (vertical_mask, vertical_segments) = imageProcesser.find_lines(
-        //            this.threshold,
-        //            direction: "vertical",
-        //            line_scale: this.line_scale,
-        //            iterations: this.iterations);
-
-        //        (horizontal_mask, horizontal_segments) = imageProcesser.find_lines(
-        //            this.threshold,
-        //            direction: "horizontal",
-        //            line_scale: this.line_scale,
-        //            iterations: this.iterations);
-
-        //        var areas = scale_areas(this.table_areas, image_scalers);
-        //        table_bbox = imageProcesser.find_joints(areas, vertical_mask, horizontal_mask);
-        //    }
-
-        //    this.table_bbox_unscaled = new Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>>(table_bbox); // copy.deepcopy(table_bbox);
-
-        //    (this.table_bbox, this.vertical_segments, this.horizontal_segments) = Utils.scale_image(
-        //        table_bbox,
-        //        vertical_segments,
-        //        horizontal_segments,
-        //        pdf_scalers);
-        //}
-
-        Dictionary<string, List<TextLine>> t_bbox;
-
         public (List<(float, float)> cols, List<(float, float)> rows, List<(float, float, float, float)> v_s, List<(float, float, float, float)> h_s) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
         {
             // select elements which lie within table_bbox
@@ -412,21 +322,18 @@ namespace Camelot.Parsers
             t_bbox["vertical"] = t_bbox["vertical"].OrderBy(x => x.x0()).ThenBy(x => -x.y0()).ToList();
 
             this.t_bbox = t_bbox;
-            //cols, rows = zip(*self.table_bbox[tk])
-            //cols, rows = list(cols), list(rows)
             var cols = this.table_bbox[tk].Select(x => (float)x.Item1).ToList();
             var rows = this.table_bbox[tk].Select(x => (float)x.Item2).ToList();
 
             cols.AddRange(new[] { tk.Item1, tk.Item3 });
             rows.AddRange(new[] { tk.Item2, tk.Item4 });
+
             // sort horizontal and vertical segments
             cols = Utils.merge_close_lines(cols.OrderBy(r => r), line_tol: this.line_tol);
             rows = Utils.merge_close_lines(rows.OrderByDescending(c => c), line_tol: this.line_tol);
-            // make grid using x and y coord of shortlisted rows and cols
-            //cols = [(cols[i], cols[i + 1]) for i in range(0, len(cols) - 1)]
-            var colsT = Enumerable.Range(0, cols.Count - 1).Select(i => (cols[i], cols[i + 1])).ToList();
 
-            //rows = [(rows[i], rows[i + 1]) for i in range(0, len(rows) - 1)]
+            // make grid using x and y coord of shortlisted rows and cols
+            var colsT = Enumerable.Range(0, cols.Count - 1).Select(i => (cols[i], cols[i + 1])).ToList();
             var rowsT = Enumerable.Range(0, rows.Count - 1).Select(i => (rows[i], rows[i + 1])).ToList();
             return (colsT, rowsT, v_s, h_s);
         }
@@ -501,17 +408,15 @@ namespace Camelot.Parsers
 
             // for plotting
             var _text = new List<(float x0, float y0, float x1, float y1)>();
-            _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));  // _text.extend([(t.x0, t.y0, t.x1, t.y1) for t in self.horizontal_text]) ;
-            _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));   // _text.extend([(t.x0, t.y0, t.x1, t.y1) for t in self.vertical_text]) ;
+            _text.AddRange(this.horizontal_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
+            _text.AddRange(this.vertical_text.Select(t => (t.x0(), t.y0(), t.x1(), t.y1())));
             table._text = _text;
-            table._image = (this.image, this.table_bbox_unscaled);
+            //table._image = (this.image, this.table_bbox_unscaled);
             table._segments = (this.vertical_segments, this.horizontal_segments);
             table._textedges = null;
 
             return table;
         }
-
-        Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox;
 
         public override List<Table> extract_tables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
@@ -538,7 +443,6 @@ namespace Camelot.Parsers
                 return null;
             }
 
-            this._generate_image();
             this._generate_table_bbox();
 
             var _tables = new List<Table>();

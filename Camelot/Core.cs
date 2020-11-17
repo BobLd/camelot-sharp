@@ -544,8 +544,6 @@ namespace Camelot
 
             public List<(float, float, float, float)> _text { get; internal set; }
 
-            internal object _image { get; set; }
-
             internal (List<(float, float, float, float)>, List<(float, float, float, float)>) _segments { get; set; }
 
             internal List<TextEdge> _textedges { get; set; }

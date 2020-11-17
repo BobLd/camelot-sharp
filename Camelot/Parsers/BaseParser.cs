@@ -97,6 +97,6 @@ namespace Camelot.Parsers
         //public (List<(float, float)> cols, List<(float, float)> rows) _generate_columns_and_rows(int table_idx, (float, float, float, float) tk)
 
         //public abstract Table _generate_table(int table_idx, List<(float, float)> cols, List<(float, float)> rows, params string[] kwargs);
-        public abstract List<Table> extract_tables(string filename, bool suppress_stdout, DlaOptions[] layout_kwargs);
+        public abstract List<Table> extract_tables(string filename, bool suppress_stdout, params DlaOptions[] layout_kwargs);
     }
 }
