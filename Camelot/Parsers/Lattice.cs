@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.Logging;
 using static Camelot.Core;
@@ -419,7 +420,7 @@ namespace Camelot.Parsers
 
         public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
-            base.GenerateLayout(filename, layout_kwargs);
+            GenerateLayout(filename, layout_kwargs);
             var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)
             if (!suppress_stdout)
             {
@@ -428,7 +429,47 @@ namespace Camelot.Parsers
 
             if (HorizontalText == null || HorizontalText.Count == 0)
             {
-                if (base.Images.Count > 0)
+                if (Images.Count > 0)
+                {
+                    log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
+                }
+                else
+                {
+                    log?.Warn($"No tables found on {base_filename}");
+                }
+                return null;
+            }
+
+            GenerateTableBbox();
+
+            var _tables = new List<Table>();
+            // sort tables based on y-coord
+            int table_idx = 0;
+            foreach (var tk in tableBbox.Keys.OrderByDescending(kvp => kvp.y1))
+            {
+                (var cols, var rows, var v_s, var h_s) = GenerateColumnsAndRows(table_idx, tk);
+                var table = GenerateTable(table_idx, cols, rows, v_s: v_s, h_s: h_s);
+                table.Bbox = tk;
+                _tables.Add(table);
+                table_idx++;
+            }
+
+            return _tables;
+        }
+
+        public override List<Table> ExtractTables(Page page, bool suppress_stdout, params DlaOptions[] layout_kwargs)
+        {
+            // TODO: optimise - redundant
+            GenerateLayout(page, layout_kwargs);
+            var base_filename = Path.GetFileName(RootName);
+            if (!suppress_stdout)
+            {
+                log?.Debug($"Processing {base_filename}");
+            }
+
+            if (HorizontalText == null || HorizontalText.Count == 0)
+            {
+                if (Images.Count > 0)
                 {
                     log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
                 }

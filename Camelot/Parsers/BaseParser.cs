@@ -51,15 +51,19 @@ namespace Camelot.Parsers
 
         public void GenerateLayout(string filename, params DlaOptions[] layout_kwargs)
         {
-            this.FileName = filename;
-            this.LayoutOptions = layout_kwargs;
+            FileName = filename;
             using (PdfDocument document = PdfDocument.Open(filename, new ParsingOptions() { ClipPaths = true, Logger = log }))
             {
-                this.Layout = document.GetPage(1); // always page 1 for the moment
+                GenerateLayout(document.GetPage(1), layout_kwargs); // always page 1 for the moment
             }
+        }
 
+        public void GenerateLayout(Page page, params DlaOptions[] layout_kwargs)
+        {
+            LayoutOptions = layout_kwargs;
+            Layout = page;
             Images = new List<byte[]>();
-            foreach (var img in this.Layout.GetImages())
+            foreach (var img in page.GetImages())
             {
                 if (img.TryGetPng(out byte[] png))
                 {
@@ -77,7 +81,7 @@ namespace Camelot.Parsers
 
             // get texts
             var nnweOptions = layout_kwargs?.Where(o => o is NearestNeighbourWordExtractor.NearestNeighbourWordExtractorOptions)?.FirstOrDefault();
-            var words = nnweOptions == null ? NearestNeighbourWordExtractor.Instance.GetWords(Layout.Letters) : NearestNeighbourWordExtractor.Instance.GetWords(Layout.Letters, nnweOptions);
+            var words = nnweOptions == null ? NearestNeighbourWordExtractor.Instance.GetWords(page.Letters) : NearestNeighbourWordExtractor.Instance.GetWords(page.Letters, nnweOptions);
 
             var dbbOptions = layout_kwargs?.Where(o => o is DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions)?.FirstOrDefault();
             var blocks = dbbOptions == null ? DocstrumBoundingBoxes.Instance.GetBlocks(words) : DocstrumBoundingBoxes.Instance.GetBlocks(words, dbbOptions);
@@ -88,13 +92,15 @@ namespace Camelot.Parsers
             // horizontal text: rotated 90 and 270
             VerticalText = blocks.SelectMany(b => b.TextLines.Where(tl => tl.TextOrientation == TextOrientation.Rotate90 || tl.TextOrientation == TextOrientation.Rotate270)).ToList();
 
-            PdfWidth = (int)Layout.Width;
-            PdfHeight = (int)Layout.Height;
+            PdfWidth = (int)page.Width;
+            PdfHeight = (int)page.Height;
             Dimensions = (PdfWidth, PdfHeight);
 
             RootName = Path.GetFileNameWithoutExtension(FileName);
         }
 
         public abstract List<Table> ExtractTables(string filename, bool suppress_stdout, params DlaOptions[] layout_kwargs);
+
+        public abstract List<Table> ExtractTables(Page page, bool suppress_stdout, params DlaOptions[] layout_kwargs);
     }
 }
