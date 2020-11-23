@@ -111,6 +111,14 @@ namespace Camelot.Parsers
 
         /// <summary>
         /// Lattice method of parsing looks for lines between text to parse the table.
+        /// <para>Uses default parameters.</para>
+        /// </summary>
+        public Lattice()
+            : this(new DefaultImageProcesser(), null)
+        { }
+
+        /// <summary>
+        /// Lattice method of parsing looks for lines between text to parse the table.
         /// </summary>
         /// <param name="imageProcesser"></param>
         /// <param name="drawingProcessor"></param>
@@ -405,7 +413,7 @@ namespace Camelot.Parsers
             table.Accuracy = accuracy;
             table.Whitespace = whitespace;
             table.Order = table_idx + 1;
-            table.Page = -99; //int(os.path.basename(self.rootname).replace("page-", ""));
+            table.Page = Layout.Number; //int(os.path.basename(self.rootname).replace("page-", ""));
 
             // for plotting
             var _text = new List<(float x0, float y0, float x1, float y1)>();
@@ -418,48 +426,8 @@ namespace Camelot.Parsers
             return table;
         }
 
-        public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
+        public override List<Table> ExtractTables(Page page, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
-            GenerateLayout(filename, layout_kwargs);
-            var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)
-            if (!suppress_stdout)
-            {
-                log?.Debug($"Processing {base_filename}");
-            }
-
-            if (HorizontalText == null || HorizontalText.Count == 0)
-            {
-                if (Images.Count > 0)
-                {
-                    log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
-                }
-                else
-                {
-                    log?.Warn($"No tables found on {base_filename}");
-                }
-                return null;
-            }
-
-            GenerateTableBbox();
-
-            var _tables = new List<Table>();
-            // sort tables based on y-coord
-            int table_idx = 0;
-            foreach (var tk in tableBbox.Keys.OrderByDescending(kvp => kvp.y1))
-            {
-                (var cols, var rows, var v_s, var h_s) = GenerateColumnsAndRows(table_idx, tk);
-                var table = GenerateTable(table_idx, cols, rows, v_s: v_s, h_s: h_s);
-                table.Bbox = tk;
-                _tables.Add(table);
-                table_idx++;
-            }
-
-            return _tables;
-        }
-
-        public override List<Table> ExtractTables(Page page, bool suppress_stdout, params DlaOptions[] layout_kwargs)
-        {
-            // TODO: optimise - redundant
             GenerateLayout(page, layout_kwargs);
             var base_filename = Path.GetFileName(RootName);
             if (!suppress_stdout)

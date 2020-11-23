@@ -1,6 +1,7 @@
 using Camelot.Parsers;
 using System.Collections.Generic;
 using System.Linq;
+using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using Xunit;
 
@@ -432,14 +433,24 @@ namespace Camelot.Tests
         [Fact]
         public void ExtractTables()
         {
-            Stream stream = new Stream();
-            var tables = stream.ExtractTables(@"Files\foo.pdf");
+            using (PdfDocument doc = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+            {
+                Stream stream = new Stream();
+                var tables = stream.ExtractTables(doc.GetPage(1));
 
-            Assert.Single(tables);
-            Assert.Equal((612, 792), stream.Dimensions);
-            Assert.Equal(612, stream.PdfWidth);
-            Assert.Equal(792, stream.PdfHeight);
-            Assert.Equal(84, stream.HorizontalText.Count);
+                Assert.Single(tables);
+                Assert.Equal((612, 792), stream.Dimensions);
+                Assert.Equal(612, stream.PdfWidth);
+                Assert.Equal(792, stream.PdfHeight);
+                Assert.Equal(84, stream.HorizontalText.Count);
+            }
+        }
+
+        [Fact(Skip = "TODO")]
+        public void test_stream()
+        {
+            var tables = Camelot.ReadPdf(@"Files\health.pdf", flavor: "stream");
+            //assert_frame_equal(df, tables[0].df)
         }
     }
 }

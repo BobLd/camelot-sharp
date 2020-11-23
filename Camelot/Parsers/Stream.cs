@@ -471,7 +471,7 @@ namespace Camelot.Parsers
             table.Accuracy = accuracy;
             table.Whitespace = whitespace;
             table.Order = table_idx + 1;
-            table.Page = -99; //int(os.path.basename(self.rootname).replace("page-", ""));
+            table.Page = Layout?.Number ?? -99;
 
             // for plotting
             var _text = new List<(float, float, float, float)>();
@@ -484,46 +484,7 @@ namespace Camelot.Parsers
             return table;
         }
 
-        public override List<Table> ExtractTables(string filename, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
-        {
-            GenerateLayout(filename, layout_kwargs);
-            var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)
-            if (!suppress_stdout)
-            {
-                log?.Debug($"Processing {base_filename}");
-            }
-
-            if (HorizontalText == null || HorizontalText.Count == 0)
-            {
-                if (Images?.Count > 0)
-                {
-                    log?.Warn($"{base_filename} is image-based, camelot only works on text-based pages.");
-                }
-                else
-                {
-                    log?.Warn($"No tables found on {base_filename}");
-                }
-                return new List<Table>();
-            }
-
-            GenerateTableBbox();
-
-            var _tables = new List<Table>();
-            // sort tables based on y-coord
-            int table_idx = 0;
-            foreach (var tk in tableBbox.Keys.OrderByDescending(kvp => kvp.Item2))
-            {
-                (var cols, var rows) = GenerateColumnsAndRows(table_idx, tk);
-                var table = GenerateTable(table_idx, cols, rows);
-                table.Bbox = tk;
-                _tables.Add(table);
-                table_idx++;
-            }
-
-            return _tables;
-        }
-
-        public override List<Table> ExtractTables(Page page, bool suppress_stdout, params DlaOptions[] layout_kwargs)
+        public override List<Table> ExtractTables(Page page, bool suppress_stdout = false, params DlaOptions[] layout_kwargs)
         {
             GenerateLayout(page, layout_kwargs);
             var base_filename = Path.GetFileName(RootName); //os.path.basename(self.rootname)

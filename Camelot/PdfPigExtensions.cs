@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
@@ -90,5 +91,122 @@ namespace Camelot
         /// TopRight.Y = Top
         /// </summary>
         public static float Y1(this Letter letter) => letter.GlyphRectangle.Y1();
+
+        /// <summary>
+        /// Returns True if two characters can coexist in the same line.
+        /// </summary>
+        /// <param name="l"></param>
+        /// <param name="obj"></param>
+        /// <returns>true</returns>
+        public static bool is_compatible(this Letter l, Letter obj)
+        {
+            return true;
+        }
+
+        //    def is_hoverlap(self, obj):
+        //    assert isinstance(obj, LTComponent), str(type(obj))
+        //    return obj.x0 <= self.x1 and self.x0 <= obj.x1
+
+        //def hdistance(self, obj) :
+        //    assert isinstance(obj, LTComponent), str(type(obj))
+        //    if self.is_hoverlap(obj):
+        //        return 0
+        //    else:
+        //        return min(abs(self.x0-obj.x1), abs(self.x1-obj.x0))
+
+        //def hoverlap(self, obj):
+        //    assert isinstance(obj, LTComponent), str(type(obj))
+        //    if self.is_hoverlap(obj):
+        //        return min(abs(self.x0-obj.x1), abs(self.x1-obj.x0))
+        //    else:
+        //        return 0
+
+        public static bool is_hoverlap(this Letter l, Letter obj)
+        {
+            return obj.X0() <= l.X1() && l.X0() <= obj.X1();
+        }
+
+        public static float hdistance(this Letter l, Letter obj)
+        {
+            if (l.is_hoverlap(obj))
+            {
+                return 0;
+            }
+            else
+            {
+                return Math.Min(Math.Abs(l.X0() - obj.X1()), Math.Abs(l.X1() - obj.X0()));
+            }
+        }
+
+        public static float hoverlap(this Letter l, Letter obj)
+        {
+            if (l.is_hoverlap(obj))
+            {
+                return Math.Min(Math.Abs(l.X0() - obj.X1()), Math.Abs(l.X1() - obj.X0()));
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public static bool is_voverlap(this Letter l, Letter obj)
+        {
+            return obj.Y0() <= l.Y1() && l.Y0() <= obj.Y1();
+        }
+
+        public static float vdistance(this Letter l, Letter obj)
+        {
+            if (l.is_voverlap(obj))
+            {
+                return 0;
+            }
+            else
+            {
+                return Math.Min(Math.Abs(l.Y0() - obj.Y1()), Math.Abs(l.Y1() - obj.Y0()));
+            }
+        }
+
+        public static float voverlap(this Letter l, Letter obj)
+        {
+            if (l.is_voverlap(obj))
+            {
+                return Math.Min(Math.Abs(l.Y0() - obj.Y1()), Math.Abs(l.Y1() - obj.Y0()));
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        public static bool isHorizontal(this TextLine line)
+        {
+            return line.TextOrientation == TextOrientation.Horizontal || line.TextOrientation == TextOrientation.Rotate180;
+        }
+
+        public static bool isVertical(this TextLine line)
+        {
+            return line.TextOrientation == TextOrientation.Rotate90 || line.TextOrientation == TextOrientation.Rotate270;
+        }
+
+        /// <summary>
+        /// BottomLeft.X = Left
+        /// </summary>
+        public static float X0(this TextBlock box) => box.BoundingBox.X0();
+
+        /// <summary>
+        /// BottomLeft.Y = Bottom
+        /// </summary>
+        public static float Y0(this TextBlock box) => box.BoundingBox.Y0();
+
+        /// <summary>
+        /// TopRight.X = Right
+        /// </summary>
+        public static float X1(this TextBlock box) => box.BoundingBox.X1();
+
+        /// <summary>
+        /// TopRight.Y = Top
+        /// </summary>
+        public static float Y1(this TextBlock box) => box.BoundingBox.Y1();
     }
 }

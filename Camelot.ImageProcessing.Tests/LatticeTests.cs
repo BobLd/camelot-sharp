@@ -1,6 +1,7 @@
 ﻿using Camelot.ImageProcessing.OpenCvSharp4;
 using Camelot.Parsers;
 using System.Linq;
+using UglyToad.PdfPig;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
 using Xunit;
@@ -12,11 +13,14 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void TestRepr()
         {
-            Lattice lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor());
-            var tables = lattice.ExtractTables(@"Files\foo.pdf", layout_kwargs: null);
-            Assert.Single(tables);
-            Assert.Equal((7, 7), tables[0].Shape);
-            Assert.Equal("<Cell x1=120.33 y1=218.33 x2=164.67 y2=234.01>", tables[0].Cells[0][0].ToString()); // "<Cell x1=120.48 y1=218.43 x2=164.64 y2=233.77>" in Python
+            using (var doc = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+            {
+                Lattice lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor());
+                var tables = lattice.ExtractTables(doc.GetPage(1), layout_kwargs: null);
+                Assert.Single(tables);
+                Assert.Equal((7, 7), tables[0].Shape);
+                Assert.Equal("<Cell x1=120.33 y1=218.33 x2=164.67 y2=234.01>", tables[0].Cells[0][0].ToString()); // "<Cell x1=120.48 y1=218.43 x2=164.64 y2=233.77>" in Python
+            }
         }
 
         // https://github.com/camelot-dev/camelot/blob/master/tests/data.py
@@ -148,45 +152,49 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void TestLatticeShiftTtext()
         {
-            Lattice lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40);
-            var tables = lattice.ExtractTables(@"Files\column_span_2.pdf",
-                layout_kwargs: new DlaOptions[]
-                {
-                    new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
-                    {
-                         WithinLineMultiplier = 2
-                    }
-                });
+            using (var doc = PdfDocument.Open(@"Files\column_span_2.pdf", new ParsingOptions() { ClipPaths = true }))
+            {
+                var page = doc.GetPage(1);
 
-            Assert.Single(tables);
-            Assert.Equal(DataLatticeShiftTextLeftTop.Length, tables[0].Cells.Count);
-            Assert.Equal(DataLatticeShiftTextLeftTop, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
-
-            lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "" });
-            tables = lattice.ExtractTables(@"Files\column_span_2.pdf",
-                layout_kwargs: new DlaOptions[]
-                {
-                    new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+                Lattice lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40);
+                var tables = lattice.ExtractTables(page,
+                    layout_kwargs: new DlaOptions[]
                     {
-                         WithinLineMultiplier = 2
-                    }
-                });
-            Assert.Single(tables);
-            Assert.Equal(DataLatticeShiftTextDisable.Length, tables[0].Cells.Count);
-            Assert.Equal(DataLatticeShiftTextDisable, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
+                        new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+                        {
+                            WithinLineMultiplier = 2
+                        }
+                    });
+                Assert.Single(tables);
+                Assert.Equal(DataLatticeShiftTextLeftTop.Length, tables[0].Cells.Count);
+                Assert.Equal(DataLatticeShiftTextLeftTop, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
-            lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "r", "b" });
-            tables = lattice.ExtractTables(@"Files\column_span_2.pdf",
-                layout_kwargs: new DlaOptions[]
-                {
-                    new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "" });
+                tables = lattice.ExtractTables(page,
+                    layout_kwargs: new DlaOptions[]
                     {
-                         WithinLineMultiplier = 2
-                    }
-                });
-            Assert.Single(tables);
-            Assert.Equal(DataLatticeShiftTextRightBottom.Length, tables[0].Cells.Count);
-            Assert.Equal(DataLatticeShiftTextRightBottom, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
+                        new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+                        {
+                            WithinLineMultiplier = 2
+                        }
+                    });
+                Assert.Single(tables);
+                Assert.Equal(DataLatticeShiftTextDisable.Length, tables[0].Cells.Count);
+                Assert.Equal(DataLatticeShiftTextDisable, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
+
+                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "r", "b" });
+                tables = lattice.ExtractTables(page,
+                    layout_kwargs: new DlaOptions[]
+                    {
+                        new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+                        {
+                            WithinLineMultiplier = 2
+                        }
+                    });
+                Assert.Single(tables);
+                Assert.Equal(DataLatticeShiftTextRightBottom.Length, tables[0].Cells.Count);
+                Assert.Equal(DataLatticeShiftTextRightBottom, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
+            }
         }
     }
 }

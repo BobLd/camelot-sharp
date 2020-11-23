@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UglyToad.PdfPig;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.DocumentLayoutAnalysis.PageSegmenter;
@@ -49,6 +48,7 @@ namespace Camelot.Parsers
 
         public string RootName { get; protected set; }
 
+        /*
         public void GenerateLayout(string filename, params DlaOptions[] layout_kwargs)
         {
             FileName = filename;
@@ -57,6 +57,7 @@ namespace Camelot.Parsers
                 GenerateLayout(document.GetPage(1), layout_kwargs); // always page 1 for the moment
             }
         }
+        */
 
         public void GenerateLayout(Page page, params DlaOptions[] layout_kwargs)
         {
@@ -84,6 +85,13 @@ namespace Camelot.Parsers
             var words = nnweOptions == null ? NearestNeighbourWordExtractor.Instance.GetWords(page.Letters) : NearestNeighbourWordExtractor.Instance.GetWords(page.Letters, nnweOptions);
 
             var dbbOptions = layout_kwargs?.Where(o => o is DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions)?.FirstOrDefault();
+            if (dbbOptions == null)
+            {
+                dbbOptions = new DocstrumBoundingBoxes.DocstrumBoundingBoxesOptions()
+                {
+                     WithinLineMultiplier = 2,
+                };
+            }
             var blocks = dbbOptions == null ? DocstrumBoundingBoxes.Instance.GetBlocks(words) : DocstrumBoundingBoxes.Instance.GetBlocks(words, dbbOptions);
 
             // horizontal text: normal and rotated 180
@@ -99,8 +107,6 @@ namespace Camelot.Parsers
             RootName = Path.GetFileNameWithoutExtension(FileName);
         }
 
-        public abstract List<Table> ExtractTables(string filename, bool suppress_stdout, params DlaOptions[] layout_kwargs);
-
-        public abstract List<Table> ExtractTables(Page page, bool suppress_stdout, params DlaOptions[] layout_kwargs);
+        public abstract List<Table> ExtractTables(Page page, bool suppress_stdout = false, params DlaOptions[] layout_kwargs);
     }
 }
