@@ -7,6 +7,7 @@ using System.Linq;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.Core;
 using UglyToad.PdfPig.Graphics.Colors;
+using UglyToad.PdfPig.Rendering;
 using static UglyToad.PdfPig.Core.PdfSubpath;
 
 namespace Camelot.ImageProcessing.OpenCvSharp4
@@ -14,7 +15,7 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
     /// <summary>
     /// Only draws pdf paths and images - letters are ignored.
     /// </summary>
-    public class BasicSystemDrawingProcessor : IDrawingProcessor
+    public class BasicSystemDrawingProcessor : IPageImageRenderer
     {
         private static Matrix GetInitialMatrix(int rotation, CropBox mediaBox)
         {
@@ -51,9 +52,16 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                               dx, dy);
         }
 
-        public MemoryStream DrawPage(Page page, double pageScale)
+        /// <summary>
+        /// <inheritdoc/>
+        /// </summary>
+        /// <param name="page"></param>
+        /// <param name="pageScale"></param>
+        /// <param name="imageFormat"></param>
+        /// <returns></returns>
+        public byte[] Render(Page page, double pageScale, PdfRendererImageFormat imageFormat = PdfRendererImageFormat.Png)
         {
-            var ms = new MemoryStream();
+            using (var ms = new MemoryStream())
             using (var bitmap = new Bitmap((int)Math.Ceiling(page.Width * pageScale), (int)Math.Ceiling(page.Height * pageScale), PixelFormat.Format32bppRgb))
             using (var currentGraphics = Graphics.FromImage(bitmap))
             {
@@ -141,9 +149,9 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                     }
                 }
 
-                bitmap.Save(ms, ImageFormat.Png);
+                bitmap.Save(ms, ToSystemImageFormat(imageFormat));
+                return ms.ToArray();
             }
-            return ms;
         }
 
         private void DrawImage(IPdfImage image, Graphics graphics)
@@ -191,6 +199,28 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                 {
                     graphics.FillRectangle(Brushes.HotPink, new RectangleF(0, 0, 1, 1));
                 }
+            }
+        }
+
+        private static ImageFormat ToSystemImageFormat(PdfRendererImageFormat pdfRendererImageFormat)
+        {
+            switch(pdfRendererImageFormat)
+            {
+                case PdfRendererImageFormat.Bmp:
+                    return ImageFormat.Bmp;
+
+                case PdfRendererImageFormat.Gif:
+                    return ImageFormat.Gif;
+
+                case PdfRendererImageFormat.Jpeg:
+                    return ImageFormat.Jpeg;
+
+                case PdfRendererImageFormat.Png:
+                default:
+                    return ImageFormat.Png;
+
+                case PdfRendererImageFormat.Tiff:
+                    return ImageFormat.Tiff;
             }
         }
 
