@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UglyToad.PdfPig.Content;
+using UglyToad.PdfPig.Rendering;
 
 namespace Camelot.ImageProcessing
 {
@@ -25,7 +26,7 @@ namespace Camelot.ImageProcessing
         /// Process the page to extract the tables.
         /// </summary>
         /// <param name="page"></param>
-        /// <param name="drawingProcessor"></param>
+        /// <param name="imageRenderer"></param>
         /// <param name="process_background">Whether or not to process lines that are in background.</param>
         /// <param name="blocksize">Size of a pixel neighborhood that is used to calculate a threshold value for the pixel: 3, 5, 7, and so on.
         /// <para>For more information, refer `OpenCV's adaptiveThreshold https://docs.opencv.org/2.4/modules/imgproc/doc/miscellaneous_transformations.html#adaptivethreshold`.</para></param>
@@ -42,7 +43,7 @@ namespace Camelot.ImageProcessing
         /// <para>vertical_segments - vertical lines (in PDF corrdinate)</para>
         /// horizontal_segments - horizontal lines (in PDF corrdinate)</returns>
         public (Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> table_bbox, List<(float, float, float, float)> vertical_segments, List<(float, float, float, float)> horizontal_segments)
-            Process(Page page, IDrawingProcessor drawingProcessor, bool process_background,
+            Process(Page page, IPageImageRenderer imageRenderer, bool process_background,
                     int blocksize = 15, int c = -2, int line_scale = 15, int iterations = 0,
                     List<(float x1, float y1, float x2, float y2)> table_areas = null,
                     List<(float x1, float y1, float x2, float y2)> table_regions = null)
@@ -54,10 +55,7 @@ namespace Camelot.ImageProcessing
 
             List<(int, int, int, int)> horizontal_segments;
 
-#pragma warning disable IDE0063 // Use simple 'using' statement
-            using (var ms = drawingProcessor.DrawPage(page, 3))
-#pragma warning restore IDE0063 // Use simple 'using' statement
-            using (var image = Mat.FromImageData(ms.ToArray()))
+            using (var image = Mat.FromImageData(imageRenderer.Render(page, 3, PdfRendererImageFormat.Png).ToArray()))
             {
                 (Mat img, Mat threshold) = AdaptiveThreshold(
                     image,

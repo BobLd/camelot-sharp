@@ -6,6 +6,7 @@ using System.Linq;
 using UglyToad.PdfPig.Content;
 using UglyToad.PdfPig.DocumentLayoutAnalysis;
 using UglyToad.PdfPig.Logging;
+using UglyToad.PdfPig.Rendering;
 using static Camelot.Core;
 
 namespace Camelot.Parsers
@@ -102,7 +103,7 @@ namespace Camelot.Parsers
         /// <summary>
         /// Drawing Processor.
         /// </summary>
-        public IDrawingProcessor DrawingProcessor { get; }
+        public IPageImageRenderer PageImageRenderer { get; }
 
         private Dictionary<string, List<TextLine>> tBbox;
         private List<(float, float, float, float)> verticalSegments;
@@ -121,7 +122,7 @@ namespace Camelot.Parsers
         /// Lattice method of parsing looks for lines between text to parse the table.
         /// </summary>
         /// <param name="imageProcesser"></param>
-        /// <param name="drawingProcessor"></param>
+        /// <param name="pageImageRenderer"></param>
         /// <param name="table_regions">List of page regions that may contain tables of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in PDF coordinate space.</param>
         /// <param name="table_areas">List of table area strings of the form x1,y1,x2,y2 where(x1, y1) -> left-top and(x2, y2) -> right-bottom in PDF coordinate space.</param>
         /// <param name="process_background">Process background lines.</param>
@@ -143,7 +144,7 @@ namespace Camelot.Parsers
         /// <param name="log"></param>
         /// <param name="kwargs"></param>
         public Lattice(IImageProcesser imageProcesser,
-                       IDrawingProcessor drawingProcessor,
+                       IPageImageRenderer pageImageRenderer,
                        List<(float x1, float y1, float x2, float y2)> table_regions = null,
                        List<(float x1, float y1, float x2, float y2)> table_areas = null,
                        bool process_background = false,
@@ -162,7 +163,7 @@ namespace Camelot.Parsers
                        ILog log = null) : base(log)
         {
             ImageProcesser = imageProcesser;
-            DrawingProcessor = drawingProcessor;
+            PageImageRenderer = pageImageRenderer;
 
             TableRegions = table_regions;
             TableAreas = table_areas;
@@ -309,7 +310,7 @@ namespace Camelot.Parsers
         {
             (tableBbox, verticalSegments, horizontalSegments) = ImageProcesser.Process(
                 Layout,
-                DrawingProcessor,
+                PageImageRenderer,
                 ProcessBackground,
                 ThresholdBlocksize,
                 ThresholdConstant,

@@ -26,9 +26,9 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = document.GetPage(1); // always page 1 for the moment
 
-                var stream = draw.DrawPage(page, 1);
 #pragma warning disable IDE0063 // Use simple 'using' statement
-                using (var img = Bitmap.FromStream(stream))
+                using (var stream = new MemoryStream(draw.Render(page, 1)))
+                using (var img = Image.FromStream(stream))
 #pragma warning restore IDE0063 // Use simple 'using' statement
                 {
                     img.Save(@"Files\Output\foo_basic_render_1.png");
@@ -46,8 +46,8 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = document.GetPage(1); // always page 1 for the moment
 
-                var stream = draw.DrawPage(page, 3);
 #pragma warning disable IDE0063 // Use simple 'using' statement
+                using (var stream = new MemoryStream(draw.Render(page, 3)))
                 using (var img = Bitmap.FromStream(stream))
 #pragma warning restore IDE0063 // Use simple 'using' statement
                 {
