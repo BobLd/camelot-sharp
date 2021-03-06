@@ -5,7 +5,7 @@
     <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export, opencv, image</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>BobLd</Authors>
-    <Version>0.0.1-alpha001</Version>
+    <Version>0.0.1-alpha002</Version>
     <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig). Contains OpenCvSharp4 for image processing used in the Lattice parser.</Description>
     <PackageProjectUrl>https://github.com/BobLd/camelot-sharp</PackageProjectUrl>
     <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
