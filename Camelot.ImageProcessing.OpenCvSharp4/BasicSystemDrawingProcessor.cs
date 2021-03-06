@@ -204,7 +204,7 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
 
         private static ImageFormat ToSystemImageFormat(PdfRendererImageFormat pdfRendererImageFormat)
         {
-            switch(pdfRendererImageFormat)
+            switch (pdfRendererImageFormat)
             {
                 case PdfRendererImageFormat.Bmp:
                     return ImageFormat.Bmp;
