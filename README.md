@@ -7,6 +7,8 @@ A C# library to extract tabular data from PDFs (port of camelot Python version u
 
 Original Python source code available here: [camelot-dev/camelot](https://github.com/camelot-dev/camelot).
 
+[![Windows](https://github.com/BobLd/camelot-sharp/actions/workflows/dotnet.yml/badge.svg)](https://github.com/BobLd/camelot-sharp/actions/workflows/dotnet.yml)
+
 # Usage
 ## Stream mode 
 ```csharp
