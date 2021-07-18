@@ -11,50 +11,9 @@
     <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.0.20201013</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.0.20201013</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.0.20201013</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.0.20201013</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.0.20201013</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.1.20210210</Version>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.1'">
-    <PackageReference Include="OpenCvSharp4">
-      <Version>4.5.0.20201013</Version>
-    </PackageReference>
-  </ItemGroup>
-
   <ItemGroup>
-    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.5.1.20210210" />
+    <PackageReference Include="OpenCvSharp4" Version="4.5.2.20210404" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.5.2.20210404" />
     <PackageReference Include="PdfPig" Version="0.1.5-alpha001" />
   </ItemGroup>
 
