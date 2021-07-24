@@ -20,7 +20,7 @@ namespace Camelot
         /// <param name="suppress_stdout">Print all logs and warnings.</param>
         /// <param name="layout_kwargs"></param>
         /// <returns>camelot.core.TableList</returns>
-        public static IEnumerable<object> ReadPdf(string filepath,
+        public static TableList ReadPdf(string filepath,
             string pages = "1",
             string password = null,
             string flavor = "lattice",

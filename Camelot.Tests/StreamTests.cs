@@ -451,7 +451,8 @@ namespace Camelot.Tests
             }
         }
 
-        [Fact(Skip = "TODO")]
+        //[Fact(Skip = "TODO")]
+        [Fact]
         public void test_stream()
         {
             var tables = Camelot.ReadPdf(@"Files\health.pdf", flavor: "stream");
