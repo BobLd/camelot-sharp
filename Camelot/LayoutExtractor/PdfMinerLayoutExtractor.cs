@@ -76,7 +76,10 @@ namespace Camelot.LayoutExtractor
         public IEnumerable<TextLine> group_objects(LAParams laparams, IEnumerable<Letter> objs)
         {
             Letter obj0 = null;
-            TextLine line = null;
+            List<Letter> line = null;
+            bool lineIsHorizontal = false;
+            bool lineIsVertical = false;
+
             foreach (var obj1 in objs)
             {
                 if (obj0 != null)
@@ -94,9 +97,6 @@ namespace Camelot.LayoutExtractor
                     var halign = obj0.is_compatible(obj1) && obj0.is_voverlap(obj1) &&
                         Math.Min(obj0.GlyphRectangle.Height, obj1.GlyphRectangle.Height) * laparams.line_overlap < obj0.voverlap(obj1) &&
                         obj0.hdistance(obj1) < Math.Max(obj0.GlyphRectangle.Width, obj1.GlyphRectangle.Width) * laparams.char_margin;
-
-                    var is_hoverlap = DocstrumBoundingBoxes.GetStructuralBlockingParameters(new PdfLine(obj0.StartBaseLine, obj0.EndBaseLine), new PdfLine(obj1.StartBaseLine, obj1.EndBaseLine), 1e-3,
-                                                                                            out double angularDifference, out double normalisedOverlap, out double perpendicularDistance);
 
                     // valign: obj0 and obj1 is vertically aligned.
                     //
@@ -116,44 +116,59 @@ namespace Camelot.LayoutExtractor
                         Math.Min(obj0.GlyphRectangle.Width, obj1.GlyphRectangle.Width) * laparams.line_overlap < obj0.hoverlap(obj1) &&
                         obj0.vdistance(obj1) < Math.Max(obj0.GlyphRectangle.Height, obj1.GlyphRectangle.Height) * laparams.char_margin;
 
-
-
-
-
-                    if ((halign && line.isHorizontal()) || (valign && line.isVertical()))
+                    if ((halign && lineIsHorizontal) || (valign && lineIsVertical))
                     {
-                        //line.Add(obj1);
-                        throw new NotImplementedException();
+                        line.Add(obj1);
                     }
                     else if (line != null)
                     {
-                        yield return line;
+                        // Need to use 'laparams.word_margin' here
+                        yield return CreateTextLine(line, laparams.word_margin);
                         line = null;
                     }
                     else
                     {
                         if (valign && !halign)
                         {
-                            throw new NotImplementedException();
+                            line = new List<Letter>(); // LTTextLineVertical(laparams.word_margin)
+                            lineIsVertical = true;
+                            line.Add(obj0);
+                            line.Add(obj1);
                         }
                         else if (halign && !valign)
                         {
-                            throw new NotImplementedException();
+                            line = new List<Letter>(); // LTTextLineHorizontal(laparams.word_margin)
+                            lineIsHorizontal = true;
+                            line.Add(obj0);
+                            line.Add(obj1);
                         }
                         else
                         {
-                            throw new NotImplementedException();
+                            line = new List<Letter>(); // LTTextLineHorizontal(laparams.word_margin)
+                            lineIsHorizontal = true;
+                            line.Add(obj0);
+                            // Need to use 'laparams.word_margin' here
+                            yield return CreateTextLine(line, laparams.word_margin);
+                            line = null;
                         }
                     }
+
+                    obj0 = obj1;
                 }
             }
 
             if (line == null)
             {
-                //line = LTTextLineHorizontal(laparams.word_margin)
-                //line.add(obj0)
+                line = new List<Letter> { obj0 }; // LTTextLineHorizontal(laparams.word_margin)
             }
-            yield return line;
+
+            yield return CreateTextLine(line, laparams.word_margin);
+        }
+
+        // not in pdfminer
+        private static TextLine CreateTextLine(IEnumerable<Letter> letters, float word_margin)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
