@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;netcoreapp2.1;netstandard2.0;netstandard2.1;net452;net46;net461;net462;net47;net5.0;net6.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1;net452;net46;net461;net462;net47;net5.0;net6.0</TargetFrameworks>
     <Authors>BobLd</Authors>
     <Version>0.0.1-alpha002</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PdfPig" Version="0.1.5-alpha001" />
+    <PackageReference Include="PdfPig" Version="0.1.5" />
   </ItemGroup>
 
 </Project>
