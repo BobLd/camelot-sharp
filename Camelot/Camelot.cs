@@ -20,7 +20,7 @@ namespace Camelot
         /// <param name="suppress_stdout">Print all logs and warnings.</param>
         /// <param name="layout_kwargs"></param>
         /// <returns>camelot.core.TableList</returns>
-        public static IEnumerable<object> ReadPdf(string filepath,
+        public static TableList ReadPdf(string filepath,
             string pages = "1",
             string password = null,
             string flavor = "lattice",
@@ -46,8 +46,8 @@ namespace Camelot
     /// </summary>
     internal class PDFHandler : IDisposable
     {
-        private PdfDocument pdfDocument;
-        private int[] pagesInt;
+        private readonly PdfDocument pdfDocument;
+        private readonly int[] pagesInt;
 
         public PDFHandler(string filepath, string pages, string password)
         {
@@ -105,7 +105,7 @@ namespace Camelot
         /// <param name="pages">Comma-separated page numbers.
         /// <para>Example: '1,3,4' or '1,4-end' or 'all'.</para></param>
         /// <returns></returns>
-        private int[] GetPages(PdfDocument infile, string pages)
+        private static int[] GetPages(PdfDocument infile, string pages)
         {
             List<(int, int)> page_numbers = new List<(int, int)>();
             if (pages == "1")

@@ -1,7 +1,7 @@
 using Camelot.ImageProcessing.OpenCvSharp4;
 using OpenCvSharp;
-using OpenCvSharp.Extensions;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using UglyToad.PdfPig;
@@ -41,7 +41,9 @@ namespace Camelot.ImageProcessing.Tests
             (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
             Assert.Equal(new int[] { 794, 596, 3 }, Shape(img));
             Assert.Equal(new int[] { 794, 596 }, Shape(threshold));
-            using (var th = threshold.ToBitmap())
+
+            using (var ms = threshold.ToMemoryStream())
+            using (var th = (Bitmap)Image.FromStream(ms))
             {
                 th.Save(@"Files\Output\PMC5055614_00002_threshold.png");
             }
@@ -49,7 +51,9 @@ namespace Camelot.ImageProcessing.Tests
             (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
             Assert.Equal(new int[] { 794, 596, 3 }, Shape(img_bg));
             Assert.Equal(new int[] { 794, 596 }, Shape(threshold_bg));
-            using (var th = threshold_bg.ToBitmap())
+
+            using (var ms = threshold_bg.ToMemoryStream())
+            using (var th = (Bitmap)Image.FromStream(ms))
             {
                 th.Save(@"Files\Output\PMC5055614_00002_threshold_bg.png");
             }
