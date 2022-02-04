@@ -3,13 +3,23 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.1;netstandard2.0;netstandard2.1;net452;net46;net461;net462;net47;net5.0;net6.0</TargetFrameworks>
     <Authors>BobLd</Authors>
-    <Version>0.0.1-alpha002</Version>
+    <Version>0.0.1-alpha003</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>A C# library to extract tabular data from PDFs (port of camelot Python version using PdfPig).</Description>
     <PackageTags>pdf, extract, table, camelot, pdfpig, parse, extraction, export</PackageTags>
     <RepositoryUrl>https://github.com/BobLd/camelot-sharp</RepositoryUrl>
     <PackageProjectUrl>https://github.com/BobLd/camelot-sharp</PackageProjectUrl>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="PdfPig" Version="0.1.5" />
