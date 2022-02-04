@@ -28,13 +28,13 @@ namespace Camelot.ImageProcessing.Tests
 
         public OpenCvSharp4Tests()
         {
-            Directory.CreateDirectory(@"Files\Output\");
+            Directory.CreateDirectory("Files/Output/");
         }
 
         [Fact]
         public void AdaptiveThreshold()
         {
-            const string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = "Files/PMC5055614_00002.jpg";
 
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
@@ -45,7 +45,7 @@ namespace Camelot.ImageProcessing.Tests
             using (var ms = threshold.ToMemoryStream())
             using (var th = (Bitmap)Image.FromStream(ms))
             {
-                th.Save(@"Files\Output\PMC5055614_00002_threshold.png");
+                th.Save(@"Files/Output/PMC5055614_00002_threshold.png");
             }
 
             (var img_bg, var threshold_bg) = _imageProcessing.AdaptiveThreshold(imagePath, true);
@@ -55,7 +55,7 @@ namespace Camelot.ImageProcessing.Tests
             using (var ms = threshold_bg.ToMemoryStream())
             using (var th = (Bitmap)Image.FromStream(ms))
             {
-                th.Save(@"Files\Output\PMC5055614_00002_threshold_bg.png");
+                th.Save(@"Files/Output/PMC5055614_00002_threshold_bg.png");
             }
 
             img.Dispose();
@@ -67,7 +67,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void FindLines()
         {
-            const string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = @"Files/PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             // horizontal
@@ -191,7 +191,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void FindContours()
         {
-            const string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = @"Files/PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, false);
@@ -250,7 +250,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void FindJoints()
         {
-            const string imagePath = @"Files\PMC5055614_00002.jpg";
+            const string imagePath = "Files/PMC5055614_00002.jpg";
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
             (var img, var threshold) = _imageProcessing.AdaptiveThreshold(imagePath, true);
@@ -414,7 +414,7 @@ namespace Camelot.ImageProcessing.Tests
             OpenCvImageProcesser _imageProcessing = new OpenCvImageProcesser();
 
 #pragma warning disable IDE0063 // Use simple 'using' statement
-            using (var document = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+            using (var document = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
 #pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 var page = document.GetPage(1);

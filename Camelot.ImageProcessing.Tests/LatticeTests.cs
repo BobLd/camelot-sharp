@@ -13,9 +13,9 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void TestRepr()
         {
-            using (var doc = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+            using (var doc = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
             {
-                Lattice lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor());
+                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor());
                 var tables = lattice.ExtractTables(doc.GetPage(1), layout_kwargs: null);
                 Assert.Single(tables);
                 Assert.Equal((7, 7), tables[0].Shape);
@@ -152,7 +152,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void TestLatticeShiftTtext()
         {
-            using (var doc = PdfDocument.Open(@"Files\column_span_2.pdf", new ParsingOptions() { ClipPaths = true }))
+            using (var doc = PdfDocument.Open(@"Files/column_span_2.pdf", new ParsingOptions() { ClipPaths = true }))
             {
                 var page = doc.GetPage(1);
 
