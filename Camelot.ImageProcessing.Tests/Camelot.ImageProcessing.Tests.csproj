@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Camelot.Backends.SkiaSharp\Camelot.Backends.SkiaSharp.csproj" />
     <ProjectReference Include="..\Camelot.ImageProcessing.OpenCvSharp4\Camelot.ImageProcessing.OpenCvSharp4.csproj" />
   </ItemGroup>
 

@@ -419,7 +419,7 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = document.GetPage(1);
 
-                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new BasicSystemDrawingProcessor(), false, 15, -2, 15, 0, null, null); //, out var table_bbox_unscaled);
+                (var table_bbox, var vertical_segments, var horizontal_segments) = _imageProcessing.Process(page, new BasicSystemImageRenderer(), false, 15, -2, 15, 0, null, null); //, out var table_bbox_unscaled);
 
                 Assert.Single(table_bbox);
                 Assert.Equal(new[] { (120.0f, 116.66666666666666f, 492.0f, 234.33333333333331f) }.ToList(), table_bbox.Keys.ToList(), new TestHelper.ListTuple4EqualityComparer(0));

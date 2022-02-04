@@ -15,7 +15,7 @@ namespace Camelot.ImageProcessing.Tests
         {
             using (var doc = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
             {
-                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor());
+                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemImageRenderer());
                 var tables = lattice.ExtractTables(doc.GetPage(1), layout_kwargs: null);
                 Assert.Single(tables);
                 Assert.Equal((7, 7), tables[0].Shape);
@@ -156,7 +156,7 @@ namespace Camelot.ImageProcessing.Tests
             {
                 var page = doc.GetPage(1);
 
-                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40);
+                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemImageRenderer(), line_scale: 40);
                 var tables = lattice.ExtractTables(page,
                     layout_kwargs: new DlaOptions[]
                     {
@@ -169,7 +169,7 @@ namespace Camelot.ImageProcessing.Tests
                 Assert.Equal(DataLatticeShiftTextLeftTop.Length, tables[0].Cells.Count);
                 Assert.Equal(DataLatticeShiftTextLeftTop, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
-                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "" });
+                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemImageRenderer(), line_scale: 40, shift_text: new[] { "" });
                 tables = lattice.ExtractTables(page,
                     layout_kwargs: new DlaOptions[]
                     {
@@ -182,7 +182,7 @@ namespace Camelot.ImageProcessing.Tests
                 Assert.Equal(DataLatticeShiftTextDisable.Length, tables[0].Cells.Count);
                 Assert.Equal(DataLatticeShiftTextDisable, tables[0].Data().Select(r => r.Select(c => c).ToArray()).ToArray());
 
-                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40, shift_text: new[] { "r", "b" });
+                lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemImageRenderer(), line_scale: 40, shift_text: new[] { "r", "b" });
                 tables = lattice.ExtractTables(page,
                     layout_kwargs: new DlaOptions[]
                     {

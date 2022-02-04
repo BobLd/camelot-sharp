@@ -15,7 +15,7 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
     /// <summary>
     /// Only draws pdf paths and images - letters are ignored.
     /// </summary>
-    public class BasicSystemDrawingProcessor : IPageImageRenderer
+    public class BasicSystemImageRenderer : IPageImageRenderer
     {
         private static Matrix GetInitialMatrix(int rotation, CropBox mediaBox)
         {

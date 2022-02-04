@@ -10,7 +10,7 @@ namespace Camelot.ImageProcessing
         /// Process the page to extract the tables.
         /// </summary>
         /// <param name="page"></param>
-        /// <param name="drawingProcessor"></param>
+        /// <param name="pageImageRenderer"></param>
         /// <param name="process_background"></param>
         /// <param name="threshold_blocksize"></param>
         /// <param name="threshold_constant"></param>
