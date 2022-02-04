@@ -267,7 +267,7 @@ namespace Camelot.Tests
 
             var actual = Stream.JoinRows(rows_grouped, 697.2215f, 436.32394999999985f);
 
-            List<(float, float)> expected = new List<(float, float)>()
+            var expected = new List<(float, float)>()
             {
                 (697.2215f, 686.7735f),
                 (686.7735f, 669.6715f),
@@ -294,7 +294,7 @@ namespace Camelot.Tests
         [Fact]
         public void TextBbox()
         {
-            Dictionary<string, List<TextLine>> t_bbox = new Dictionary<string, List<TextLine>>()
+            var t_bbox = new Dictionary<string, List<TextLine>>()
             {
                 {
                     "horizontal",
@@ -373,7 +373,7 @@ namespace Camelot.Tests
         [Fact]
         public void GenerateColumnsAndRows()
         {
-            Stream stream = new Stream(ColumnSpan2HorizontalText, new List<TextLine>());
+            var stream = new Stream(ColumnSpan2HorizontalText, new List<TextLine>());
             var (cols, rows) = stream.GenerateColumnsAndRows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
 
             var cols_expected = new List<(float, float)>()
@@ -417,7 +417,7 @@ namespace Camelot.Tests
         [Fact]
         public void GenerateTable()
         {
-            Stream stream = new Stream(ColumnSpan2HorizontalText, new List<TextLine>());
+            var stream = new Stream(ColumnSpan2HorizontalText, new List<TextLine>());
             (var cols, var rows) = stream.GenerateColumnsAndRows(0, (74.89665500000015f, 426.32394999999985f, 518.1806500000001f, 714.2693141025641f));
             var actual = stream.GenerateTable(0, cols, rows);
 
@@ -435,7 +435,7 @@ namespace Camelot.Tests
         {
             using (PdfDocument doc = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
             {
-                Stream stream = new Stream();
+                var stream = new Stream();
                 var tables = stream.ExtractTables(doc.GetPage(1));
 
                 Assert.Single(tables);

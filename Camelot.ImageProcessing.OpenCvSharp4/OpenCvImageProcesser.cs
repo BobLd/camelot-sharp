@@ -196,7 +196,7 @@ namespace Camelot.ImageProcessing
         public (Mat dmask, List<(int, int, int, int)> lines) FindLines(Mat threshold, List<(int x1, int y1, int x2, int y2)> regions = null,
             string direction = "horizontal", int line_scale = 15, int iterations = 0)
         {
-            List<(int, int, int, int)> lines = new List<(int, int, int, int)>();
+            var lines = new List<(int, int, int, int)>();
 #pragma warning disable IDE0063 // Use simple 'using' statement
             using (Mat threshold_local = threshold.Clone())
 #pragma warning restore IDE0063 // Use simple 'using' statement
@@ -231,7 +231,7 @@ namespace Camelot.ImageProcessing
 
                 Cv2.Erode(threshold_local, threshold_local, el);
                 Cv2.Dilate(threshold_local, threshold_local, el);
-                Mat dmask = new Mat();
+                var dmask = new Mat();
                 Cv2.Dilate(threshold_local, dmask, el, iterations: iterations);
 
                 Debug.Assert(threshold_local.Channels() == 1);
@@ -303,7 +303,7 @@ namespace Camelot.ImageProcessing
         public Dictionary<(float x1, float y1, float x2, float y2), List<(float, float)>> FindJoints(List<(int x, int y, int w, int h)> contours, Mat vertical, Mat horizontal)
         {
 #pragma warning disable IDE0063 // Use simple 'using' statement
-            using (Mat joints = new Mat())
+            using (var joints = new Mat())
 #pragma warning restore IDE0063 // Use simple 'using' statement
             {
                 Cv2.Multiply(vertical, horizontal, joints);

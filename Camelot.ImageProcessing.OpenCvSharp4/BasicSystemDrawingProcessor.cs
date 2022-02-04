@@ -84,7 +84,7 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
 
                 foreach (var path in page.ExperimentalAccess.Paths)
                 {
-                    GraphicsPath gp = new GraphicsPath();
+                    var gp = new GraphicsPath();
                     foreach (var subpath in path)
                     {
                         foreach (var command in subpath.Commands)
@@ -110,7 +110,7 @@ namespace Camelot.ImageProcessing.OpenCvSharp4
                             }
                             else
                             {
-                                throw new ArgumentException();
+                                throw new ArgumentException($"Unknown command type '{command.GetType()}'.");
                             }
                         }
                     }

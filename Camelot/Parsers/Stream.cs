@@ -422,7 +422,7 @@ namespace Camelot.Parsers
         /// </summary>
         public Table GenerateTable(int table_idx, List<(float, float)> cols, List<(float, float)> rows)
         {
-            Table table = new Table(cols, rows);
+            var table = new Table(cols, rows);
             table.SetAllEdges();
 
             var pos_errors = new List<float>();

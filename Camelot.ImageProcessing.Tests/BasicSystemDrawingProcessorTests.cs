@@ -19,7 +19,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void DrawScale1()
         {
-            BasicSystemDrawingProcessor draw = new BasicSystemDrawingProcessor();
+            var draw = new BasicSystemDrawingProcessor();
 #pragma warning disable IDE0063 // Use simple 'using' statement
             using (var document = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
 #pragma warning restore IDE0063 // Use simple 'using' statement
@@ -31,7 +31,7 @@ namespace Camelot.ImageProcessing.Tests
                 using (var img = Image.FromStream(stream))
 #pragma warning restore IDE0063 // Use simple 'using' statement
                 {
-                    img.Save(@"Files/Output/foo_basic_render_1.png");
+                    img.Save("Files/Output/foo_basic_render_1.png");
                 }
             }
         }
@@ -39,7 +39,7 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void DrawScale3()
         {
-            BasicSystemDrawingProcessor draw = new BasicSystemDrawingProcessor();
+            var draw = new BasicSystemDrawingProcessor();
 #pragma warning disable IDE0063 // Use simple 'using' statement
             using (var document = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
 #pragma warning restore IDE0063 // Use simple 'using' statement
@@ -51,7 +51,7 @@ namespace Camelot.ImageProcessing.Tests
                 using (var img = Bitmap.FromStream(stream))
 #pragma warning restore IDE0063 // Use simple 'using' statement
                 {
-                    img.Save(@"Files/Output/foo_basic_render_3.png");
+                    img.Save("Files/Output/foo_basic_render_3.png");
                 }
             }
         }

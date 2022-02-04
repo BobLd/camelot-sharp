@@ -147,7 +147,7 @@ namespace Camelot.Tests
         public void GetTableIndex()
         {
             const string direction = "horizontal";
-            Table table = new Table(TableTests.FooCols, TableTests.FooRows);
+            var table = new Table(TableTests.FooCols, TableTests.FooRows);
 
             var l_table0 = TestHelper.MakeTextLine(new float[] { 80, 200, 200, 250 }, "l_table0");
             var (indices, error) = Utils.GetTableIndex(table, l_table0, direction);

@@ -550,7 +550,7 @@ namespace Camelot.Tests
         [Fact]
         public void FooTable()
         {
-            Table table = new Table(FooCols, FooRows);
+            var table = new Table(FooCols, FooRows);
 
             // cells
             Assert.Equal(FooCells.Length, table.Cells.Count);
@@ -641,7 +641,7 @@ namespace Camelot.Tests
         [Fact]
         public void FooSetAllEdges()
         {
-            Table table = new Table(FooCols, FooRows);
+            var table = new Table(FooCols, FooRows);
             table.SetAllEdges();
 
             for (int r = 0; r < table.Cells.Count; r++)
@@ -661,9 +661,9 @@ namespace Camelot.Tests
         [Fact]
         public void FooSetEdges()
         {
-            Table table = new Table(FooCols, FooRows);
+            var table = new Table(FooCols, FooRows);
 
-            List<(float, float, float, float)> vertical = new List<(float, float, float, float)>()
+            var vertical = new List<(float, float, float, float)>()
             {
                 (71, 71, 71, 275),
                 (168, 168, 257, 168),
@@ -671,7 +671,7 @@ namespace Camelot.Tests
                 (208, 258, 235, 235)
             };
 
-            List<(float, float, float, float)> horizontal = new List<(float, float, float, float)>()
+            var horizontal = new List<(float, float, float, float)>()
             {
                 (71, 71, 71, 275),
                 (168, 168, 257, 168),

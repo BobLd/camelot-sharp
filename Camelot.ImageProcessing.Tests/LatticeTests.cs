@@ -152,11 +152,11 @@ namespace Camelot.ImageProcessing.Tests
         [Fact]
         public void TestLatticeShiftTtext()
         {
-            using (var doc = PdfDocument.Open(@"Files/column_span_2.pdf", new ParsingOptions() { ClipPaths = true }))
+            using (var doc = PdfDocument.Open("Files/column_span_2.pdf", new ParsingOptions() { ClipPaths = true }))
             {
                 var page = doc.GetPage(1);
 
-                Lattice lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40);
+                var lattice = new Lattice(new OpenCvImageProcesser(), new BasicSystemDrawingProcessor(), line_scale: 40);
                 var tables = lattice.ExtractTables(page,
                     layout_kwargs: new DlaOptions[]
                     {

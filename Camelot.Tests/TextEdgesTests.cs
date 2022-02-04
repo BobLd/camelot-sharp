@@ -192,13 +192,13 @@ namespace Camelot.Tests
         [Fact]
         public void Create()
         {
-            TextEdges te0 = new TextEdges();
+            var te0 = new TextEdges();
             Assert.Equal(50, te0.EdgeTol);
 
-            TextEdges te1 = new TextEdges(1.025f);
+            var te1 = new TextEdges(1.025f);
             Assert.Equal(1.025f, te1.EdgeTol);
 
-            TextEdges te2 = new TextEdges(3.14f);
+            var te2 = new TextEdges(3.14f);
             Assert.Equal(3.14f, te2.EdgeTol);
         }
 
@@ -214,7 +214,7 @@ namespace Camelot.Tests
             var l5 = TestHelper.MakeTextLine(new float[] { 107.999f, 641.1378f, 401.308f, 652.1178f }, "l5");
 
             // generate
-            TextEdges tes = new TextEdges();
+            var tes = new TextEdges();
             tes.Generate(new TextLine[] { l0, l1, l2, l3, l4, l5 });
 
             foreach (var align in new string[] { "left", "right", "middle" })
@@ -241,7 +241,7 @@ namespace Camelot.Tests
             var l4 = TestHelper.MakeTextLine(new float[] { 71.995f, 641.1378f, 99.5225f, 652.1178f }, "l4");
             var l5 = TestHelper.MakeTextLine(new float[] { 107.999f, 641.1378f, 401.308f, 652.1178f }, "l5");
 
-            TextEdges tes = new TextEdges();
+            var tes = new TextEdges();
             tes.Generate(new TextLine[] { l0, l1, l2, l3, l4, l5 });
 
             // find
@@ -264,7 +264,7 @@ namespace Camelot.Tests
             var l5 = TestHelper.MakeTextLine(new float[] { 107.999f, 641.1378f, 401.308f, 652.1178f }, "l5");
 
             // generate
-            TextEdges tes = new TextEdges();
+            var tes = new TextEdges();
             tes.Generate(new TextLine[] { l0, l1, l2, l3, l4, l5 });
 
             var relevant = tes.GetRelevant();
@@ -288,7 +288,7 @@ namespace Camelot.Tests
             var l5 = TestHelper.MakeTextLine(new float[] { 107.999f, 641.1378f, 401.308f, 652.1178f }, "l5");
 
             // generate
-            TextEdges tes = new TextEdges();
+            var tes = new TextEdges();
             tes.Generate(new TextLine[] { l0, l1, l2, l3, l4, l5 });
 
             tes.TextedgesForTest["left"][0].IsValid = true; // force one valid
