@@ -433,7 +433,7 @@ namespace Camelot.Tests
         [Fact]
         public void ExtractTables()
         {
-            using (PdfDocument doc = PdfDocument.Open(@"Files\foo.pdf", new ParsingOptions() { ClipPaths = true }))
+            using (PdfDocument doc = PdfDocument.Open("Files/foo.pdf", new ParsingOptions() { ClipPaths = true }))
             {
                 Stream stream = new Stream();
                 var tables = stream.ExtractTables(doc.GetPage(1));
@@ -455,7 +455,7 @@ namespace Camelot.Tests
         [Fact]
         public void test_stream()
         {
-            var tables = Camelot.ReadPdf(@"Files\health.pdf", flavor: "stream");
+            var tables = Camelot.ReadPdf("Files/health.pdf", flavor: "stream");
             //assert_frame_equal(df, tables[0].df)
         }
     }
