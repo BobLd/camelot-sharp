@@ -94,10 +94,9 @@ namespace Camelot.Backends.SkiaSharp
 
                     if (path.IsStroked)
                     {
-                        var lineWidth = path.LineWidth;
                         using (var pen = new SKPaint()
                         {
-                            StrokeWidth = (float)lineWidth,
+                            StrokeWidth = (float)path.LineWidth,
                             Style = SKPaintStyle.Stroke,
                             Color = ToSkiaColor(path.StrokeColor),
                             FilterQuality = SKFilterQuality.High,
